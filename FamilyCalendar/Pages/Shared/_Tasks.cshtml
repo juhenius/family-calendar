@@ -1,0 +1,16 @@
+@using Htmx;
+@model FamilyCalendar.Pages.IndexModel
+
+<ul id="tasks" @(Model.Request.IsHtmx() ? "hx-swap-oob=\"true\"" : "")>
+  @foreach (var task in await Model.GetTasksAsync())
+  {
+    <li>
+      @task.Text
+      <form hx-delete hx-page="Index" hx-page-handler="DeleteTask">
+        <input type="hidden" name="Id" value="@task.Id" />
+        @Html.AntiForgeryToken()
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  }
+</ul>

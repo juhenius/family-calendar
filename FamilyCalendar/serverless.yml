@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Application that uses the ASP.NET Core framework running in Amazon Lambda.
+Parameters: {}
+Conditions: {}
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FamilyCalendar
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  AspNetCoreHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: Prod
+  AspNetCoreFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: FamilyCalendar::FamilyCalendar.LambdaEntryPoint::FunctionHandlerAsync
+      Runtime: dotnet8
+      CodeUri: ''
+      MemorySize: 512
+      Timeout: 30
+      Role:
+        Fn::GetAtt: LambdaExecutionRole.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              Ref: DynamoDBTable
+        - AWSLambda_FullAccess
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: DynamoDBTable
+      Events:
+        AnyResource:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AspNetCoreHttpApi
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ["sts:AssumeRole"]
+      Policies:
+        - PolicyName: LambdaDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:Scan"
+                  - "dynamodb:Query"
+                Resource:
+                  Fn::GetAtt: DynamoDBTable.Arn
+Outputs:
+  ApiURL:
+    Description: "API endpoint URL for Prod environment"
+    Value:
+      Fn::Sub: 'https://${AspNetCoreHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+  DynamoDBTableArn:
+    Description: "ARN of the DynamoDB table"
+    Value:
+      Fn::GetAtt: DynamoDBTable.Arn
