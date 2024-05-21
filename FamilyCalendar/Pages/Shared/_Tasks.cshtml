@@ -5,7 +5,8 @@
   @foreach (var task in await Model.GetTasksAsync())
   {
     <li>
-      @task.Text
+      @task.Title
+      @task.Date.ToString("o")
       <form hx-delete hx-page="Index" hx-page-handler="DeleteTask">
         <input type="hidden" name="Id" value="@task.Id" />
         @Html.AntiForgeryToken()

@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2;
+using FamilyCalendar.Entries;
 
 namespace FamilyCalendar;
 
@@ -14,8 +15,11 @@ public class Startup
   // This method gets called by the runtime. Use this method to add services to the container.
   public void ConfigureServices(IServiceCollection services)
   {
+    services.Configure<FamilyCalendarSettings>(Configuration.GetSection("FamilyCalendar"));
+
     services.AddRazorPages();
     services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+    services.AddSingleton<IEntryRepository, EntryRepository>();
   }
 
   // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
