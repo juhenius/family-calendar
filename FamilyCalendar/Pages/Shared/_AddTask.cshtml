@@ -1,8 +1,0 @@
-@model FamilyCalendar.Pages.IndexModel
-
-<form hx-post hx-page="Index" hx-page-handler="AddTask" hx-swap="outerHTML">
-  <label asp-for="Text"></label>
-  <input type="text" asp-for="Text">
-  <button type="submit">Add</button>
-  @Html.AntiForgeryToken()
-</form>

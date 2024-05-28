@@ -1,0 +1,12 @@
+﻿@page
+@using FamilyCalendar.Pages.Shared
+@model CalendarModel
+@{
+  ViewData["Title"] = "Calendar";
+}
+
+<div class="p-4">
+  <div hx-get hx-page="Calendar" hx-page-handler="Refresh" hx-trigger="every 60s" hx-swap="innerHtml">
+    @await Html.PartialAsync("_Calendar")
+  </div>
+</div>

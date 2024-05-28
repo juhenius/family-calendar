@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h1 {
+  @apply
+    font-semibold
+  ;
+}
+
+h2 {
+  @apply
+    font-semibold
+  ;
+}
+
+h3 {
+  @apply
+    font-semibold
+  ;
+}
+
+.btn {
+  @apply
+    font-bold
+    py-2
+    px-4
+    rounded
+  ;
+}
+
+.btn-blue {
+  @apply
+    bg-blue-500
+    hover:bg-blue-700
+    text-white
+  ;
+}
+
+.btn-red {
+  @apply
+    bg-red-500
+    hover:bg-red-700
+    text-white
+  ;
+}
+
+.card {
+  @apply
+    p-2
+    rounded
+    shadow-sm
+    border-gray-300
+    border
+  ;
+}
+
+.card-title {
+  @apply
+    text-sm
+    text-gray-700
+  ;
+}
+
+.card-date {
+  @apply
+    text-sm
+    text-gray-500
+  ;
+}
+
+.form-label {
+  @apply
+    text-sm
+    font-medium
+    leading-6
+    text-gray-900
+  ;
+}
+
+.form-input {
+  @apply
+    border-0
+    py-1.5
+    px-3
+    text-gray-900
+    rounded-md
+    shadow-sm
+    ring-1
+    ring-inset
+    ring-gray-300
+    placeholder:text-gray-400
+    focus:ring-1
+    focus:ring-inset
+    focus:ring-indigo-600
+  ;
+}

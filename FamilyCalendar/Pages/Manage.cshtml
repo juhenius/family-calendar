@@ -1,0 +1,10 @@
+﻿@page
+@model ManageModel
+@{
+  ViewData["Title"] = "Manage";
+}
+
+<div class="p-4 space-y-4">
+  @await Html.PartialAsync("_AddEntry")
+  @await Html.PartialAsync("_EntryList", Model.GetEntryListModel(false))
+</div>

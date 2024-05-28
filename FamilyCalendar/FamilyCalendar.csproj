@@ -17,7 +17,17 @@
     <PackageReference Include="Htmx" Version="1.8.0" />
     <PackageReference Include="Htmx.TagHelpers" Version="1.8.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Folder Include="wwwroot\images\" />
+    <CssFiles Include="wwwroot/css/site.css" />
   </ItemGroup>
+
+  <Target Name="WatchAndBuildCss" BeforeTargets="CoreCompile" Inputs="@(CssFiles)" Outputs="wwwroot/css/styles.css">
+    <Exec Command="npm run build" />
+  </Target>
+
+  <Target Name="PreBuild" BeforeTargets="Build">
+    <Exec Command="npm install" />
+    <Exec Command="npm run build" />
+  </Target>
 </Project>

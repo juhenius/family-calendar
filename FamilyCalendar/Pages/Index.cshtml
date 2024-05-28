@@ -1,13 +1,11 @@
 ﻿@page
+@using FamilyCalendar.Pages.Shared
 @model IndexModel
 @{
-  ViewData["Title"] = "Home page";
+  ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-  @await Html.PartialAsync("_AddTask")
-
-  <div hx-get hx-page="Index" hx-page-handler="Tasks" hx-trigger="every 60s" hx-swap="innerHtml">
-    @await Html.PartialAsync("_Tasks")
-  </div>
+<div class="p-4">
+  <a asp-page="Calendar">Calendar</a>
+  <a asp-page="Manage">Manage</a>
 </div>

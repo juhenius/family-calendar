@@ -1,0 +1,17 @@
+@model CalendarModel
+
+<div id="calendar" class="grid grid-cols-3 gap-5">
+  @foreach (var owner in new[] { "fake owner 1", "fake owner 2", "fake owner 3" })
+  {
+    <div class="flex flex-col gap-2">
+      <h2 class="text-gray-700">@owner</h2>
+      @foreach (var entry in await Model.GetEntriesAsync())
+      {
+        <div class="flex flex-col gap-2 card">
+          <h3 class="flex-auto break-all card-title">@entry.Title</h3>
+          <p class="card-date">@Html.DisplayFor(_ => entry.Date)</p>
+        </div>
+      }
+    </div>
+  }
+</div>
