@@ -6,5 +6,5 @@ public class Entry
   public required Guid CalendarId { get; init; }
   public required string Title { get; init; }
   public required string Member { get; init; }
-  public required DateTime Date { get; init; }
+  public required DateTimeOffset Date { get; init; }
 }

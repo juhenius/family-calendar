@@ -20,8 +20,8 @@ public class CalendarModel(IEntryRepository entryRepository) : PageModel
   {
     var entryDtos = await _entryRepository.GetByDateRangeAsync(
       CalendarId,
-      DateTime.UtcNow.Date,
-      DateTime.UtcNow.Date.Add(TimeSpan.FromDays(1))
+      DateTimeOffset.UtcNow.Date,
+      DateTimeOffset.UtcNow.Date.Add(TimeSpan.FromDays(1))
     );
 
     return entryDtos.OrderBy(e => e.Date.ToString("s"));

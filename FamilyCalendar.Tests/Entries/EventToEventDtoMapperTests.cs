@@ -12,7 +12,7 @@ public class EventToEventDtoMapperTests
       Id = Guid.NewGuid(),
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
-      Date = DateTime.UtcNow,
+      Date = DateTimeOffset.UtcNow,
       Member = "Tester",
     };
 
@@ -36,12 +36,12 @@ public class EventToEventDtoMapperTests
       Id = Guid.NewGuid(),
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
-      Date = new DateTime(2024, 5, 31, 14, 5, 0, DateTimeKind.Unspecified),
+      Date = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
       Member = "Tester",
     };
 
     var entryDto = entry.ToEntryDto();
 
-    Assert.Equal(DateTimeKind.Utc, entryDto.Date.Kind);
+    Assert.Equal(TimeSpan.Zero, entryDto.Date.Offset);
   }
 }

@@ -12,7 +12,7 @@ public class EntryDtoToEntryMapperTests
       Id = Guid.NewGuid(),
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
-      Date = new DateTime(2023, 5, 20),
+      Date = new DateTimeOffset(2023, 5, 20, 14, 5, 0, TimeSpan.Zero),
       Member = "Tester",
     };
 

@@ -44,7 +44,7 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     return response.Items.Select(ToEntry).Where(x => x is not null).Select(e => e!);
   }
 
-  public async Task<IEnumerable<Entry>> GetByDateRangeAsync(Guid calendarId, DateTime rangeStart, DateTime rangeEnd, CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<Entry>> GetByDateRangeAsync(Guid calendarId, DateTimeOffset rangeStart, DateTimeOffset rangeEnd, CancellationToken cancellationToken = default)
   {
     var request = new QueryRequest
     {
@@ -68,7 +68,7 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
   public async Task<bool> CreateAsync(Entry entry, CancellationToken cancellationToken)
   {
     var entryDto = entry.ToEntryDto();
-    entryDto.UpdatedAt = DateTime.UtcNow;
+    entryDto.UpdatedAt = DateTimeOffset.UtcNow;
     var attributes = ToAttributes(entryDto);
 
     var createItemRequest = new PutItemRequest
@@ -85,7 +85,7 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
   public async Task<bool> UpdateAsync(Entry entry, CancellationToken cancellationToken)
   {
     var entryDto = entry.ToEntryDto();
-    entryDto.UpdatedAt = DateTime.UtcNow;
+    entryDto.UpdatedAt = DateTimeOffset.UtcNow;
     var attributes = ToAttributes(entryDto);
 
     var updateItemRequest = new PutItemRequest

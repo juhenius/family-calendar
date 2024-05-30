@@ -29,7 +29,7 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
       Id = Guid.NewGuid(),
       CalendarId = CalendarId,
       Title = Title,
-      Date = DateTime.UtcNow,
+      Date = DateTimeOffset.UtcNow,
       Member = "test1",
     };
 

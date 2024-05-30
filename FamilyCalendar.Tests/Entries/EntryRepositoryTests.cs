@@ -18,14 +18,14 @@ public partial class EntryRepositoryTests
     _repository = new EntryRepository(_dynamoDb, _settings);
   }
 
-  private static bool IsCloseTo(string value, DateTime now)
+  private static bool IsCloseTo(string value, DateTimeOffset now)
   {
-    return DateTime.TryParse(value, out var parsedValue) && (now - parsedValue) < TimeSpan.FromSeconds(5);
+    return DateTimeOffset.TryParse(value, out var parsedValue) && (now - parsedValue) < TimeSpan.FromSeconds(5);
   }
 
-  private static bool IsEqualTo(string value, DateTime now)
+  private static bool IsEqualTo(string value, DateTimeOffset now)
   {
-    return DateTime.TryParse(value, out var parsedValue) && now == parsedValue.ToUniversalTime();
+    return DateTimeOffset.TryParse(value, out var parsedValue) && now == parsedValue.ToUniversalTime();
   }
 
   private static Entry CreateTestEntry()
@@ -35,7 +35,7 @@ public partial class EntryRepositoryTests
       Id = Guid.NewGuid(),
       CalendarId = Guid.NewGuid(),
       Title = "New Entry",
-      Date = DateTime.UtcNow,
+      Date = DateTimeOffset.UtcNow,
       Member = "Tester"
     };
   }

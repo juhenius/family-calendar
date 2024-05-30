@@ -27,8 +27,8 @@ public class EntryDto
   public string Member { get; init; } = default!;
 
   [JsonPropertyName("date")]
-  public DateTime Date { get; init; }
+  public DateTimeOffset Date { get; init; }
 
   [JsonPropertyName("updatedAt")]
-  public DateTime UpdatedAt { get; set; }
+  public DateTimeOffset UpdatedAt { get; set; }
 }

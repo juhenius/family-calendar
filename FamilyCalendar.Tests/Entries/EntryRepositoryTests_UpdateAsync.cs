@@ -52,7 +52,7 @@ public partial class EntryRepositoryTests
   public async Task UpdateAsync_SetsUpdatedAt()
   {
     var entry = CreateTestEntry();
-    var now = DateTime.UtcNow;
+    var now = DateTimeOffset.UtcNow;
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
