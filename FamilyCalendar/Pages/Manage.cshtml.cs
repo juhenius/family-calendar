@@ -5,39 +5,39 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FamilyCalendar.Pages;
 
-public class ManageModel : PageModel
+public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
 {
+  private readonly ILogger<IndexModel> _logger = logger;
+  private readonly IEntryRepository _entryRepository = entryRepository;
+  private readonly IPartialViewRenderer _partialViewRenderer = partialViewRenderer;
+
   [BindProperty]
-  public string? Text { get; set; }
+  public required Guid CalendarId { get; set; }
 
-  [BindProperty(SupportsGet = true)]
-  public Guid? Id { get; set; }
-
-  private readonly ILogger<IndexModel> _logger;
-  private readonly IEntryRepository _entryRepository;
-  private readonly IPartialViewRenderer _partialViewRenderer;
-
-  public ManageModel(IEntryRepository entryRepository, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger)
-  {
-    _entryRepository = entryRepository;
-    _partialViewRenderer = partialViewRenderer;
-    _logger = logger;
-  }
+  [BindProperty]
+  public string Title { get; set; } = default!;
 
   public async Task<IActionResult> OnPostAddEntryAsync(CancellationToken cancellationToken)
   {
+    if (string.IsNullOrEmpty(Title))
+    {
+      throw new ArgumentException("Entry Title is missing");
+    }
+
     var entry = new Entry()
     {
       Id = Guid.NewGuid(),
-      Title = Text!,
+      CalendarId = CalendarId,
+      Title = Title,
       Date = DateTime.UtcNow,
+      Member = "test1",
     };
 
-    var success = await _entryRepository.CreateAsync(entry.ToEntryDto(), cancellationToken);
+    var success = await _entryRepository.CreateAsync(entry, cancellationToken);
 
     if (!success)
     {
-      _logger.LogError("Failed to write DB item");
+      _logger.LogError("Failed to write entry");
     }
 
     var html = $@"
@@ -49,13 +49,13 @@ public class ManageModel : PageModel
 
   }
 
-  public async Task<IActionResult> OnDeleteDeleteEntry(CancellationToken cancellationToken)
+  public async Task<IActionResult> OnDeleteDeleteEntry([FromForm] Guid entryId, CancellationToken cancellationToken)
   {
-    var success = await _entryRepository.DeleteAsync(Id.Value, cancellationToken);
+    var success = await _entryRepository.DeleteAsync(CalendarId, entryId, cancellationToken);
 
     if (!success)
     {
-      _logger.LogError("Failed to delete DB item");
+      _logger.LogError("Failed to delete entry");
     }
 
     return Partial("_EntryList", GetEntryListModel(true));
@@ -65,25 +65,21 @@ public class ManageModel : PageModel
   {
     return new EntryListModel(_entryRepository)
     {
+      CalendarId = CalendarId,
       OutOfBandSwap = outOfBandSwap
     };
   }
 }
 
-public class EntryListModel
+public class EntryListModel(IEntryRepository entryRepository)
 {
-  private readonly IEntryRepository _entryRepository;
-  public required bool OutOfBandSwap { get; set; } = false;
-
-
-  public EntryListModel(IEntryRepository entryRepository)
-  {
-    _entryRepository = entryRepository;
-  }
+  private readonly IEntryRepository _entryRepository = entryRepository;
+  public required Guid CalendarId { get; set; }
+  public required bool OutOfBandSwap { get; set; }
 
   public async Task<IEnumerable<Entry>> GetEntriesAsync()
   {
-    var entryDtos = await _entryRepository.GetAllAsync();
-    return entryDtos.Select(e => e.ToEntry());
+    var entryDtos = await _entryRepository.GetAllAsync(CalendarId);
+    return entryDtos.OrderByDescending(e => e.Date.ToString("s"));
   }
 }

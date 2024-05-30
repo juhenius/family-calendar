@@ -13,6 +13,8 @@ Resources:
           AttributeType: S
         - AttributeName: sk
           AttributeType: S
+        - AttributeName: date
+          AttributeType: S
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -22,6 +24,18 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: 'EntriesByDate'
+          KeySchema:
+            - AttributeName: 'pk'
+              KeyType: 'HASH'
+            - AttributeName: 'date'
+              KeyType: 'RANGE'
+          Projection:
+            ProjectionType: 'ALL'
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
   AspNetCoreHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -61,6 +75,8 @@ Resources:
             Principal:
               Service: [lambda.amazonaws.com]
             Action: ["sts:AssumeRole"]
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
         - PolicyName: LambdaDynamoDBAccess
           PolicyDocument:
@@ -75,7 +91,8 @@ Resources:
                   - "dynamodb:Scan"
                   - "dynamodb:Query"
                 Resource:
-                  Fn::GetAtt: DynamoDBTable.Arn
+                  - !GetAtt DynamoDBTable.Arn
+                  - !Sub "${DynamoDBTable.Arn}/index/EntriesByDate"
 Outputs:
   ApiURL:
     Description: "API endpoint URL for Prod environment"

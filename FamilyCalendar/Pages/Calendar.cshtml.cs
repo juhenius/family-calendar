@@ -4,14 +4,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FamilyCalendar.Pages;
 
-public class CalendarModel : PageModel
+public class CalendarModel(IEntryRepository entryRepository) : PageModel
 {
-  private readonly IEntryRepository _entryRepository;
+  private readonly IEntryRepository _entryRepository = entryRepository;
 
-  public CalendarModel(IEntryRepository entryRepository)
-  {
-    _entryRepository = entryRepository;
-  }
+  [BindProperty]
+  public required Guid CalendarId { get; set; }
 
   public IActionResult OnGetRefresh()
   {
@@ -20,7 +18,12 @@ public class CalendarModel : PageModel
 
   public async Task<IEnumerable<Entry>> GetEntriesAsync()
   {
-    var entryDtos = await _entryRepository.GetAllAsync();
-    return entryDtos.Select(e => e.ToEntry());
+    var entryDtos = await _entryRepository.GetByDateRangeAsync(
+      CalendarId,
+      DateTime.UtcNow.Date,
+      DateTime.UtcNow.Date.Add(TimeSpan.FromDays(1))
+    );
+
+    return entryDtos.OrderBy(e => e.Date.ToString("s"));
   }
 }

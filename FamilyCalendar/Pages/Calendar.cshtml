@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/Calendar/{calendarId}"
 @using FamilyCalendar.Pages.Shared
 @model CalendarModel
 @{
@@ -6,7 +6,7 @@
 }
 
 <div class="p-4">
-  <div hx-get hx-page="Calendar" hx-page-handler="Refresh" hx-trigger="every 60s" hx-swap="innerHtml">
+  <div hx-get hx-page-handler="Refresh" hx-trigger="every 60s" hx-swap="innerHtml">
     @await Html.PartialAsync("_Calendar")
   </div>
 </div>

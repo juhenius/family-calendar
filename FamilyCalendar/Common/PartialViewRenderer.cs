@@ -7,20 +7,13 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace FamilyCalendar.Common;
 
-public class PartialViewRenderer : IPartialViewRenderer
+public class PartialViewRenderer(ICompositeViewEngine viewEngine,
+      ITempDataProvider tempDataProvider,
+      IServiceProvider serviceProvider) : IPartialViewRenderer
 {
-  private readonly ICompositeViewEngine _viewEngine;
-  private readonly ITempDataProvider _tempDataProvider;
-  private readonly IServiceProvider _serviceProvider;
-
-  public PartialViewRenderer(ICompositeViewEngine viewEngine,
-        ITempDataProvider tempDataProvider,
-        IServiceProvider serviceProvider)
-  {
-    _viewEngine = viewEngine;
-    _tempDataProvider = tempDataProvider;
-    _serviceProvider = serviceProvider;
-  }
+  private readonly ICompositeViewEngine _viewEngine = viewEngine;
+  private readonly ITempDataProvider _tempDataProvider = tempDataProvider;
+  private readonly IServiceProvider _serviceProvider = serviceProvider;
 
   public Task<string> RenderPartialViewToStringAsync(string viewName, object model)
   {

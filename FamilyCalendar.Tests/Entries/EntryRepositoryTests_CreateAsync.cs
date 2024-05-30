@@ -9,7 +9,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_UsesGivenTable()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -21,25 +21,37 @@ public partial class EntryRepositoryTests
   }
 
   [Fact]
-  public async Task CreateAsync_SetsEntryId()
+  public async Task CreateAsync_SetsCalendarIdAsPartitionKey()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
 
     await _dynamoDb.Received(1).PutItemAsync(Arg.Is<PutItemRequest>(request =>
-      request.Item["pk"].S == entry.Id.ToString() &&
-      request.Item["sk"].S == entry.Id.ToString() &&
-      request.Item["id"].S == entry.Id.ToString()
+      request.Item["pk"].S == entry.CalendarId.ToString()
+    ), Arg.Any<CancellationToken>());
+  }
+
+  [Fact]
+  public async Task CreateAsync_SetsEntryIdWithPrefixAsSortingKey()
+  {
+    var entry = CreateTestEntry();
+    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
+    _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
+
+    await _repository.CreateAsync(entry, CancellationToken.None);
+
+    await _dynamoDb.Received(1).PutItemAsync(Arg.Is<PutItemRequest>(request =>
+      request.Item["sk"].S == entry.Id.ToEntrySk()
     ), Arg.Any<CancellationToken>());
   }
 
   [Fact]
   public async Task CreateAsync_SetsUpdatedAt()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var now = DateTime.UtcNow;
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
@@ -48,28 +60,31 @@ public partial class EntryRepositoryTests
 
     await _dynamoDb.Received(1).PutItemAsync(Arg.Is<PutItemRequest>(request =>
       request.Item.ContainsKey("updatedAt") &&
-      isCloseTo(request.Item["updatedAt"].S, now)
+      IsCloseTo(request.Item["updatedAt"].S, now)
     ), Arg.Any<CancellationToken>());
   }
 
   [Fact]
   public async Task CreateAsync_SetsEntryAttributes()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
 
     await _dynamoDb.Received(1).PutItemAsync(Arg.Is<PutItemRequest>(request =>
-      request.Item["title"].S == entry.Title
+      request.Item["id"].S == entry.Id.ToString() &&
+      request.Item["title"].S == entry.Title &&
+      IsEqualTo(request.Item["date"].S, entry.Date) &&
+      request.Item["member"].S == entry.Member
     ), Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task CreateAsync_ReturnsTrue_WhenItemIsCreated()
+  public async Task CreateAsync_ReturnsTrue_WhenEntryIsCreated()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -81,7 +96,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_ReturnsFalse_WhenCreateFails()
   {
-    var entry = new EntryDto { Id = Guid.NewGuid(), Title = "New Entry" };
+    var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 

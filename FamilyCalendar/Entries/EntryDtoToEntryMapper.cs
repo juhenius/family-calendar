@@ -7,7 +7,9 @@ public static class EntryDtoToEntryMapper
     return new Entry
     {
       Id = source.Id,
+      CalendarId = source.CalendarId,
       Title = source.Title,
+      Member = source.Member,
       Date = source.Date,
     };
   }

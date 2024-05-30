@@ -7,52 +7,69 @@ using Microsoft.Extensions.Options;
 
 namespace FamilyCalendar.Entries;
 
-public class EntryRepository : IEntryRepository
+public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSettings> settings) : IEntryRepository
 {
-  private readonly IAmazonDynamoDB _dynamoDb;
-  private readonly string _tableName;
+  private readonly IAmazonDynamoDB _dynamoDb = dynamoDb;
+  private readonly string _tableName = settings.Value.DynamoDbTable;
+  private readonly string _entriesByDateIndex = settings.Value.EntriesByDateIndex;
 
-  public EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSettings> settings)
-  {
-    _dynamoDb = dynamoDb;
-    _tableName = settings.Value.DynamoDbTable;
-  }
-
-  public async Task<EntryDto?> GetAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<Entry?> GetAsync(Guid calendarId, Guid entryId, CancellationToken cancellationToken)
   {
     var getItemRequest = new GetItemRequest
     {
       TableName = _tableName,
-      Key = new Dictionary<string, AttributeValue> {
-        { "pk", new AttributeValue { S = id.ToString() } },
-        { "sk", new AttributeValue { S = id.ToString() } },
+      Key = new() {
+        { "pk", new AttributeValue { S = calendarId.ToString() } },
+        { "sk", new AttributeValue { S = entryId.ToEntrySk() } },
       }
     };
 
     var response = await _dynamoDb.GetItemAsync(getItemRequest, cancellationToken);
-    if (response.Item.Count == 0)
-    {
-      return null;
-    }
-
-    return ToEntryDto(response.Item);
+    return response.Item.Count == 0 ? null : ToEntry(response.Item);
   }
 
-  public async Task<IEnumerable<EntryDto>> GetAllAsync(CancellationToken cancellationToken)
+  public async Task<IEnumerable<Entry>> GetAllAsync(Guid calendarId, CancellationToken cancellationToken)
   {
-    var scanRequest = new ScanRequest
+    var request = new QueryRequest
     {
-      TableName = _tableName
+      TableName = _tableName,
+      KeyConditionExpression = "pk = :pk and begins_with(sk, :skPrefix)",
+      ExpressionAttributeValues = new() {
+        { ":pk", new AttributeValue { S = calendarId.ToString() } },
+        { ":skPrefix", new AttributeValue { S = EntryDto.SkPrefix } },
+      }
     };
 
-    var response = await _dynamoDb.ScanAsync(scanRequest, cancellationToken);
-    return response.Items.Select(ToEntryDto).Where(x => x is not null).Select(e => e!);
+    var response = await _dynamoDb.QueryAsync(request, cancellationToken);
+    return response.Items.Select(ToEntry).Where(x => x is not null).Select(e => e!);
   }
 
-  public async Task<bool> CreateAsync(EntryDto entry, CancellationToken cancellationToken)
+  public async Task<IEnumerable<Entry>> GetByDateRangeAsync(Guid calendarId, DateTime rangeStart, DateTime rangeEnd, CancellationToken cancellationToken = default)
   {
-    entry.UpdatedAt = DateTime.UtcNow;
-    var attributes = ToAttributes(entry);
+    var request = new QueryRequest
+    {
+      TableName = _tableName,
+      IndexName = _entriesByDateIndex,
+      KeyConditionExpression = "pk = :pk and #date between :from and :to",
+      ExpressionAttributeNames = new() {
+        { "#date", "date" }
+      },
+      ExpressionAttributeValues = new() {
+        { ":pk", new AttributeValue { S = calendarId.ToString() } },
+        { ":from", new AttributeValue { S = rangeStart.ToUniversalTime().ToString("s") } },
+        { ":to", new AttributeValue { S = rangeEnd.ToUniversalTime().ToString("s") } },
+      }
+    };
+
+    var response = await _dynamoDb.QueryAsync(request, cancellationToken);
+    return response.Items.Select(ToEntry).Where(x => x is not null).Select(e => e!);
+  }
+
+  public async Task<bool> CreateAsync(Entry entry, CancellationToken cancellationToken)
+  {
+    var entryDto = entry.ToEntryDto();
+    entryDto.UpdatedAt = DateTime.UtcNow;
+    var attributes = ToAttributes(entryDto);
 
     var createItemRequest = new PutItemRequest
     {
@@ -65,10 +82,11 @@ public class EntryRepository : IEntryRepository
     return response.HttpStatusCode == HttpStatusCode.OK;
   }
 
-  public async Task<bool> UpdateAsync(EntryDto entry, CancellationToken cancellationToken)
+  public async Task<bool> UpdateAsync(Entry entry, CancellationToken cancellationToken)
   {
-    entry.UpdatedAt = DateTime.UtcNow;
-    var attributes = ToAttributes(entry);
+    var entryDto = entry.ToEntryDto();
+    entryDto.UpdatedAt = DateTime.UtcNow;
+    var attributes = ToAttributes(entryDto);
 
     var updateItemRequest = new PutItemRequest
     {
@@ -80,14 +98,14 @@ public class EntryRepository : IEntryRepository
     return response.HttpStatusCode == HttpStatusCode.OK;
   }
 
-  public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<bool> DeleteAsync(Guid calendarId, Guid entryId, CancellationToken cancellationToken)
   {
     var deletedItemRequest = new DeleteItemRequest
     {
       TableName = _tableName,
-      Key = new Dictionary<string, AttributeValue>() {
-        { "pk", new AttributeValue { S = id.ToString() } },
-        { "sk", new AttributeValue { S = id.ToString() } },
+      Key = new() {
+        { "pk", new AttributeValue { S = calendarId.ToString() } },
+        { "sk", new AttributeValue { S = entryId.ToEntrySk() } },
       }
     };
 
@@ -95,15 +113,15 @@ public class EntryRepository : IEntryRepository
     return response.HttpStatusCode == HttpStatusCode.OK;
   }
 
-  private Dictionary<string, AttributeValue> ToAttributes(EntryDto entry)
+  private static Dictionary<string, AttributeValue> ToAttributes(EntryDto entryDto)
   {
-    string json = JsonSerializer.Serialize(entry);
+    var json = JsonSerializer.Serialize(entryDto);
     return Document.FromJson(json).ToAttributeMap();
   }
 
-  private EntryDto? ToEntryDto(Dictionary<string, AttributeValue> attributes)
+  private static Entry? ToEntry(Dictionary<string, AttributeValue> attributes)
   {
     var json = Document.FromAttributeMap(attributes).ToJson();
-    return JsonSerializer.Deserialize<EntryDto>(json);
+    return JsonSerializer.Deserialize<EntryDto>(json)?.ToEntry();
   }
 }

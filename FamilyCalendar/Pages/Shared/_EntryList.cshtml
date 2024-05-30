@@ -9,7 +9,7 @@
           <h3 class="flex-auto break-all card-title">@entry.Title</h3>
           <form hx-delete hx-page="Manage" hx-page-handler="DeleteEntry">
             <button type="submit" class="btn btn-red text-xs">Delete</button>
-            <input type="hidden" name="Id" value="@entry.Id" />
+            <input type="hidden" name="EntryId" value="@entry.Id" />
             @Html.AntiForgeryToken()
           </form>
         </div>
