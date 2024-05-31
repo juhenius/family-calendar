@@ -13,7 +13,7 @@ public partial class EntryRepositoryTests
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
-    var result = await _repository.CreateAsync(entry, CancellationToken.None);
+    await _repository.CreateAsync(entry, CancellationToken.None);
 
     await _dynamoDb.Received(1).PutItemAsync(Arg.Is<PutItemRequest>(request =>
         request.TableName == _testTableName

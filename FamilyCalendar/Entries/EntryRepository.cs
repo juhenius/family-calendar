@@ -50,14 +50,14 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     {
       TableName = _tableName,
       IndexName = _entriesByDateIndex,
-      KeyConditionExpression = "pk = :pk and #date between :from and :to",
+      KeyConditionExpression = "pk = :pk and #date between :rangeStart and :rangeEnd",
       ExpressionAttributeNames = new() {
         { "#date", "date" }
       },
       ExpressionAttributeValues = new() {
         { ":pk", new AttributeValue { S = calendarId.ToString() } },
-        { ":from", new AttributeValue { S = rangeStart.ToUniversalTime().ToString("s") } },
-        { ":to", new AttributeValue { S = rangeEnd.ToUniversalTime().ToString("s") } },
+        { ":rangeStart", new AttributeValue { S = rangeStart.ToUniversalTime().ToString("s") } },
+        { ":rangeEnd", new AttributeValue { S = rangeEnd.ToUniversalTime().ToString("s") } },
       }
     };
 

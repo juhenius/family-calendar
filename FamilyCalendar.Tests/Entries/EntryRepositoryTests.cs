@@ -18,14 +18,32 @@ public partial class EntryRepositoryTests
     _repository = new EntryRepository(_dynamoDb, _settings);
   }
 
+  private static bool IsCloseTo(string value, DateTimeOffset now, TimeSpan offset)
+  {
+    return TryParseDateTime(value, out var parsedValue) && (now - parsedValue) < offset;
+  }
+
   private static bool IsCloseTo(string value, DateTimeOffset now)
   {
-    return DateTimeOffset.TryParse(value, out var parsedValue) && (now - parsedValue) < TimeSpan.FromSeconds(5);
+    return IsCloseTo(value, now, TimeSpan.FromSeconds(5));
   }
 
   private static bool IsEqualTo(string value, DateTimeOffset now)
   {
-    return DateTimeOffset.TryParse(value, out var parsedValue) && now == parsedValue.ToUniversalTime();
+    return TryParseDateTime(value, out var parsedValue) && now == parsedValue.ToUniversalTime();
+  }
+
+  private static bool TryParseDateTime(string value, out DateTimeOffset result)
+  {
+    if (DateTimeOffset.TryParse(value, out var parsedValue))
+    {
+      var localDateTime = parsedValue.DateTime;
+      result = new DateTimeOffset(localDateTime, TimeSpan.Zero).ToUniversalTime();
+      return true;
+    }
+
+    result = DateTimeOffset.UtcNow;
+    return false;
   }
 
   private static Entry CreateTestEntry()
