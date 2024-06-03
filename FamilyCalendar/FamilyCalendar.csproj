@@ -22,12 +22,15 @@
     <CssFiles Include="wwwroot/css/site.css" />
   </ItemGroup>
 
-  <Target Name="WatchAndBuildCss" BeforeTargets="CoreCompile" Inputs="@(CssFiles)" Outputs="wwwroot/css/styles.css">
-    <Exec Command="npm run build" />
+  <Target Name="InstallNodeDependencies" BeforeTargets="Build" Condition="!Exists('node_modules')">
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project." />
+    <Exec Command="npm ci" />
   </Target>
 
-  <Target Name="PreBuild" BeforeTargets="Build">
-    <Exec Command="npm install" />
+  <Target Name="BuildNodeDependencies" BeforeTargets="Build" Inputs="@(CssFiles)" Outputs="wwwroot/css/styles.css">
     <Exec Command="npm run build" />
   </Target>
 </Project>
