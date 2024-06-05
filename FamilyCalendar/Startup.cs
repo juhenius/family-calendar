@@ -11,7 +11,6 @@ public class Startup(IConfiguration configuration)
   public void ConfigureServices(IServiceCollection services)
   {
     services.Configure<FamilyCalendarSettings>(Configuration.GetSection("FamilyCalendar"));
-    services.Configure<AppSettings>(Configuration);
 
     services.AddRazorPages();
     services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();

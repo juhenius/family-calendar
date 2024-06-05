@@ -4,15 +4,16 @@ public class Program
 {
   public static void Main(string[] args)
   {
+    DotNetEnv.Env.NoClobber().Load();
     CreateHostBuilder(args).Build().Run();
   }
 
   public static IHostBuilder CreateHostBuilder(string[] args)
   {
     return Host.CreateDefaultBuilder(args)
-      .ConfigureWebHostDefaults(webBuilder =>
+      .ConfigureWebHostDefaults(builder =>
       {
-        webBuilder.UseStartup<Startup>();
+        builder.UseStartup<Startup>();
       });
   }
 }

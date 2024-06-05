@@ -57,8 +57,10 @@ Resources:
         - AWSLambda_FullAccess
       Environment:
         Variables:
-          TABLE_NAME:
+          FamilyCalendar__DynamoDbTable:
             Ref: DynamoDBTable
+          FamilyCalendar__EntriesByDateIndex: EntriesByDate
+          FamilyCalendar__BaseHref: /Prod/
       Events:
         AnyResource:
           Type: HttpApi

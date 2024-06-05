@@ -14,7 +14,12 @@ public partial class EntryRepositoryTests
 
   public EntryRepositoryTests()
   {
-    _settings.Value.Returns(new FamilyCalendarSettings { DynamoDbTable = _testTableName, EntriesByDateIndex = _testEntriesByDateIndex });
+    _settings.Value.Returns(new FamilyCalendarSettings
+    {
+      DynamoDbTable = _testTableName,
+      EntriesByDateIndex = _testEntriesByDateIndex,
+      BaseHref = ""
+    });
     _repository = new EntryRepository(_dynamoDb, _settings);
   }
 
