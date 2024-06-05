@@ -18,7 +18,9 @@ public partial class EntryRepositoryTests
     {
       DynamoDbTable = _testTableName,
       EntriesByDateIndex = _testEntriesByDateIndex,
-      BaseHref = ""
+      BaseHref = "",
+      ViewerPassword = "",
+      AdministratorPassword = "",
     });
     _repository = new EntryRepository(_dynamoDb, _settings);
   }

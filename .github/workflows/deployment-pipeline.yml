@@ -47,6 +47,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Deploy to AWS
+        env:
+          VIEWER_PASSWORD: ${{ secrets.VIEWER_PASSWORD }}
+          ADMINISTRATOR_PASSWORD: ${{ secrets.ADMINISTRATOR_PASSWORD }}
         run: |
           dotnet lambda deploy-serverless \
             --configuration Release \
@@ -54,5 +57,6 @@ jobs:
             --s3-bucket ${{ vars.S3_BUCKET }} \
             --stack-name ${{ vars.STACK_NAME }} \
             --template serverless.yml \
-            --region ${{ vars.AWS_REGION }}
+            --region ${{ vars.AWS_REGION }} \
+            --template-parameters "ViewerPassword=${VIEWER_PASSWORD};AdministratorPassword=${ADMINISTRATOR_PASSWORD}"
         working-directory: ./FamilyCalendar

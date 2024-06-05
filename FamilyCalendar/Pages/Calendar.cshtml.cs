@@ -1,9 +1,11 @@
 using FamilyCalendar.Entries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FamilyCalendar.Pages;
 
+[Authorize]
 public class CalendarModel(IEntryRepository entryRepository) : PageModel
 {
   private readonly IEntryRepository _entryRepository = entryRepository;

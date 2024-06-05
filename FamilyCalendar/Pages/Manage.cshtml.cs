@@ -2,9 +2,11 @@ using FamilyCalendar.Entries;
 using FamilyCalendar.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyCalendar.Pages;
 
+[Authorize(Roles = "Administrator")]
 public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
 {
   private readonly ILogger<IndexModel> _logger = logger;

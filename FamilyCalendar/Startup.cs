@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using FamilyCalendar.Common;
 using FamilyCalendar.Entries;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace FamilyCalendar;
 
@@ -16,6 +17,19 @@ public class Startup(IConfiguration configuration)
     services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
     services.AddSingleton<IEntryRepository, EntryRepository>();
     services.AddSingleton<IPartialViewRenderer, PartialViewRenderer>();
+    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+      .AddCookie(options =>
+      {
+        options.LoginPath = "/Login";
+        options.LogoutPath = "/Logout";
+        options.AccessDeniedPath = "/AccessDenied";
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.ExpireTimeSpan = TimeSpan.FromDays(1);
+      });
+    services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
   }
 
   public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -36,6 +50,7 @@ public class Startup(IConfiguration configuration)
 
     app.UseRouting();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.UseEndpoints(endpoints =>

@@ -1,5 +1,6 @@
 ﻿@page
 @using FamilyCalendar.Pages.Shared
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor;
 @model IndexModel
 @{
   ViewData["Title"] = "Home";
@@ -8,4 +9,9 @@
 <div class="p-4">
   <a asp-page="Calendar" asp-route-calendarId="00000000-0000-0000-0000-000000000000">Calendar</a>
   <a asp-page="Manage" asp-route-calendarId="00000000-0000-0000-0000-000000000000">Manage</a>
+  @if (HttpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true)
+  {
+    <a asp-page="Logout">Logout</a>
+  }
+
 </div>

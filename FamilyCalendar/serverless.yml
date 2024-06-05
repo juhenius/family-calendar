@@ -1,7 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Application that uses the ASP.NET Core framework running in Amazon Lambda.
-Parameters: {}
+Parameters:
+  AdministratorPassword:
+    Type: String
+    Description: Administrator password
+  ViewerPassword:
+    Type: String
+    Description: Viewer password
 Conditions: {}
 Resources:
   DynamoDBTable:
@@ -61,6 +67,10 @@ Resources:
             Ref: DynamoDBTable
           FamilyCalendar__EntriesByDateIndex: EntriesByDate
           FamilyCalendar__BaseHref: /Prod/
+          FamilyCalendar__ViewerPassword:
+            Ref: ViewerPassword
+          FamilyCalendar__AdministratorPassword:
+            Ref: AdministratorPassword
       Events:
         AnyResource:
           Type: HttpApi

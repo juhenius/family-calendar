@@ -1,0 +1,22 @@
+﻿@page
+@using FamilyCalendar.Pages.Shared
+@model LoginModel
+@{
+  ViewData["Title"] = "Login";
+}
+
+<div class="p-4">
+  <form method="post" class="space-y-4">
+    <div asp-validation-summary="All" class="text-red-400"></div>
+    <div>
+      <label asp-for="Input.Password" class="block form-label">Password</label>
+      <input asp-for="Input.Password" class="block w-full mt-1 form-input">
+      <span asp-validation-for="Input.Password" class="text-red-400"></span>
+    </div>
+    <button type="submit" class="btn btn-blue">
+      Login
+    </button>
+    @Html.AntiForgeryToken()
+  </form>
+
+</div>
