@@ -1,5 +1,7 @@
 # FamilyCalendar
 
+[![Deployment Pipeline](https://github.com/juhenius/family-calendar/actions/workflows/deployment-pipeline.yml/badge.svg)](https://github.com/juhenius/family-calendar/actions/workflows/deployment-pipeline.yml)
+
 This document outlines the FamilyCalendar project, an open-source shared digital calendar for family use, targeted to support children in better understanding the progression of their day.
 
 ## Motivation
