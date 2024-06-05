@@ -11,7 +11,7 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
   private readonly IEntryRepository _entryRepository = entryRepository;
   private readonly IPartialViewRenderer _partialViewRenderer = partialViewRenderer;
 
-  [BindProperty]
+  [BindProperty(SupportsGet = true)]
   public required Guid CalendarId { get; set; }
 
   [BindProperty]

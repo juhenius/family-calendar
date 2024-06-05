@@ -8,7 +8,7 @@ public class CalendarModel(IEntryRepository entryRepository) : PageModel
 {
   private readonly IEntryRepository _entryRepository = entryRepository;
 
-  [BindProperty]
+  [BindProperty(SupportsGet = true)]
   public required Guid CalendarId { get; set; }
 
   public IActionResult OnGetRefresh()
