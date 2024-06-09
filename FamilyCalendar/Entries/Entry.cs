@@ -7,4 +7,20 @@ public class Entry
   public required string Title { get; init; }
   public required string Member { get; init; }
   public required DateTimeOffset Date { get; init; }
+
+  public override bool Equals(object? obj)
+  {
+    if (obj == null || GetType() != obj.GetType())
+    {
+      return false;
+    }
+
+    var other = (Entry)obj;
+    return Id == other.Id;
+  }
+
+  public override int GetHashCode()
+  {
+    return Id.GetHashCode();
+  }
 }

@@ -12,6 +12,7 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
   private readonly ILogger<IndexModel> _logger = logger;
   private readonly IEntryRepository _entryRepository = entryRepository;
   private readonly IPartialViewRenderer _partialViewRenderer = partialViewRenderer;
+  private readonly List<Entry> _newEntries = [];
 
   [BindProperty(SupportsGet = true)]
   public required Guid CalendarId { get; set; }
@@ -42,6 +43,8 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
       _logger.LogError("Failed to write entry");
     }
 
+    _newEntries.Add(entry);
+
     var html = $@"
       {await _partialViewRenderer.RenderPartialViewToStringAsync("_AddEntry", this, PageContext, TempData)}
       {await _partialViewRenderer.RenderPartialViewToStringAsync("_EntryList", GetEntryListModel(true), PageContext, TempData)}
@@ -68,7 +71,8 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
     return new EntryListModel(_entryRepository)
     {
       CalendarId = CalendarId,
-      OutOfBandSwap = outOfBandSwap
+      NewEntries = _newEntries,
+      OutOfBandSwap = outOfBandSwap,
     };
   }
 }
@@ -76,12 +80,19 @@ public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer 
 public class EntryListModel(IEntryRepository entryRepository)
 {
   private readonly IEntryRepository _entryRepository = entryRepository;
-  public required Guid CalendarId { get; set; }
-  public required bool OutOfBandSwap { get; set; }
+
+  public required Guid CalendarId { get; init; }
+  public List<Entry> NewEntries { get; init; } = [];
+  public required bool OutOfBandSwap { get; init; }
 
   public async Task<IEnumerable<Entry>> GetEntriesAsync()
   {
     var entryDtos = await _entryRepository.GetAllAsync(CalendarId);
     return entryDtos.OrderByDescending(e => e.Date.ToString("s"));
+  }
+
+  public bool IsNewEntry(Entry entry)
+  {
+    return NewEntries.Contains(entry);
   }
 }
