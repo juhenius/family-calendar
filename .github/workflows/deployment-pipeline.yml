@@ -50,6 +50,8 @@ jobs:
         run: |
           parameters=(
             "AdministratorPassword=${{ secrets.ADMINISTRATOR_PASSWORD }}"
+            "OpenAiApiKey=${{ secrets.OPEN_AI_API_KEY }}"
+            "OpenAiModelId=${{ secrets.OPEN_AI_MODEL_ID }}"
             "ViewerPassword=${{ secrets.VIEWER_PASSWORD }}"
           )
 

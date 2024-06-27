@@ -1,15 +1,37 @@
 @model CalendarModel
 
-<div id="calendar" class="grid grid-cols-3 gap-5">
-  @foreach (var owner in new[] { "fake owner 1", "fake owner 2", "fake owner 3" })
+@{
+  var entries = await Model.GetEntriesAsync();
+  var participants = entries.SelectMany(entry => entry.Participants).Distinct().ToList();
+}
+
+<div id="calendar" class="grid grid-cols-@participants.Count gap-5">
+  @foreach (var participant in participants)
   {
     <div class="flex flex-col gap-2">
-      <h2 class="text-gray-700">@owner</h2>
-      @foreach (var entry in await Model.GetEntriesAsync())
+      <h2 class="text-gray-700">@participant</h2>
+      @foreach (var entry in entries.Where(entry => entry.Participants.Contains(participant)))
       {
         <div class="flex flex-col gap-2 card">
           <h3 class="flex-auto break-all card-title">@entry.Title</h3>
-          <p class="card-date">@Html.DisplayFor(_ => entry.Date)</p>
+          <p>
+            <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Date.cshtml")</span>
+            <span class="text-sm text-gray-500">@Html.DisplayFor(_ => entry.Date)</span>
+          </p>
+          @if (!string.IsNullOrEmpty(entry.Location))
+          {
+            <p>
+              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Location.cshtml")</span>
+              <span class="text-sm text-gray-500">@entry.Location</span>
+            </p>
+          }
+          @if (entry.Participants.Count > 0)
+          {
+            <p>
+              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Participant.cshtml")</span>
+              <span class="text-sm text-gray-500">@string.Join(", ", entry.Participants)</span>
+            </p>
+          }
         </div>
       }
     </div>

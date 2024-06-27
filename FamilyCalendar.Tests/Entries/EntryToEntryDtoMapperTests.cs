@@ -2,7 +2,7 @@ using FamilyCalendar.Entries;
 
 namespace FamilyCalendar.Tests.Entries;
 
-public class EventToEventDtoMapperTests
+public class EntryToEntryDtoMapperTests
 {
   [Fact]
   public void ToEntryDto_ShouldCorrectlyMapEntryDtoToEntry()
@@ -13,7 +13,8 @@ public class EventToEventDtoMapperTests
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
       Date = DateTimeOffset.UtcNow,
-      Member = "Tester",
+      Location = "Doctors office",
+      Participants = ["Tester"],
     };
 
     var entryDto = entry.ToEntryDto();
@@ -25,7 +26,8 @@ public class EventToEventDtoMapperTests
     Assert.Equal(entry.CalendarId, entryDto.CalendarId);
     Assert.Equal(entry.Title, entryDto.Title);
     Assert.Equal(entry.Date, entryDto.Date);
-    Assert.Equal(entry.Member, entryDto.Member);
+    Assert.Equal(entry.Location, entryDto.Location);
+    Assert.Equal(entry.Participants, entryDto.Participants);
   }
 
   [Fact]
@@ -37,7 +39,7 @@ public class EventToEventDtoMapperTests
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
       Date = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
-      Member = "Tester",
+      Participants = ["Tester"],
     };
 
     var entryDto = entry.ToEntryDto();

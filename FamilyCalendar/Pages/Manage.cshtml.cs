@@ -7,35 +7,28 @@ using Microsoft.AspNetCore.Authorization;
 namespace FamilyCalendar.Pages;
 
 [Authorize(Roles = "Administrator")]
-public class ManageModel(IEntryRepository entryRepository, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
+public class ManageModel(IEntryRepository entryRepository, IEntryParser entryParser, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
 {
   private readonly ILogger<IndexModel> _logger = logger;
   private readonly IEntryRepository _entryRepository = entryRepository;
   private readonly IPartialViewRenderer _partialViewRenderer = partialViewRenderer;
+  private readonly IEntryParser _entryParser = entryParser;
   private readonly List<Entry> _newEntries = [];
 
   [BindProperty(SupportsGet = true)]
   public required Guid CalendarId { get; set; }
 
   [BindProperty]
-  public string Title { get; set; } = default!;
+  public string? EntryInput { get; set; } = default;
 
   public async Task<IActionResult> OnPostAddEntryAsync(CancellationToken cancellationToken)
   {
-    if (string.IsNullOrEmpty(Title))
+    if (string.IsNullOrEmpty(EntryInput))
     {
-      throw new ArgumentException("Entry Title is missing");
+      throw new ArgumentException("Parameter EntryInput is missing");
     }
 
-    var entry = new Entry()
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = CalendarId,
-      Title = Title,
-      Date = DateTimeOffset.UtcNow,
-      Member = "test1",
-    };
-
+    var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, cancellationToken);
     var success = await _entryRepository.CreateAsync(entry, cancellationToken);
 
     if (!success)

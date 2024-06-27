@@ -5,6 +5,12 @@ Parameters:
   AdministratorPassword:
     Type: String
     Description: Administrator password
+  OpenAiApiKey:
+    Type: String
+    Description: Open AI api key
+  OpenAiModelId:
+    Type: String
+    Description: Open AI model ID. For example gpt-4o.
   ViewerPassword:
     Type: String
     Description: Viewer password
@@ -63,14 +69,18 @@ Resources:
         - AWSLambda_FullAccess
       Environment:
         Variables:
+          FamilyCalendar__AdministratorPassword:
+            Ref: AdministratorPassword
+          FamilyCalendar__BaseHref: /Prod/
           FamilyCalendar__DynamoDbTable:
             Ref: DynamoDBTable
           FamilyCalendar__EntriesByDateIndex: EntriesByDate
-          FamilyCalendar__BaseHref: /Prod/
+          FamilyCalendar__OpenAiApiKey:
+            Ref: OpenAiApiKey
+          FamilyCalendar__OpenAiModelId:
+            Ref: OpenAiModelId
           FamilyCalendar__ViewerPassword:
             Ref: ViewerPassword
-          FamilyCalendar__AdministratorPassword:
-            Ref: AdministratorPassword
       Events:
         AnyResource:
           Type: HttpApi

@@ -9,8 +9,9 @@ public static class EntryDtoToEntryMapper
       Id = source.Id,
       CalendarId = source.CalendarId,
       Title = source.Title,
-      Member = source.Member,
       Date = source.Date,
+      Location = source.Location,
+      Participants = source.Participants,
     };
   }
 }

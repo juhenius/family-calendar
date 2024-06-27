@@ -13,7 +13,8 @@ public class EntryDtoToEntryMapperTests
       CalendarId = Guid.NewGuid(),
       Title = "Doctor Appointment",
       Date = new DateTimeOffset(2023, 5, 20, 14, 5, 0, TimeSpan.Zero),
-      Member = "Tester",
+      Location = "Doctors office",
+      Participants = ["Tester"],
     };
 
     var entry = entryDto.ToEntry();
@@ -23,6 +24,7 @@ public class EntryDtoToEntryMapperTests
     Assert.Equal(entryDto.CalendarId, entry.CalendarId);
     Assert.Equal(entryDto.Title, entry.Title);
     Assert.Equal(entryDto.Date, entry.Date);
-    Assert.Equal(entryDto.Member, entry.Member);
+    Assert.Equal(entryDto.Location, entry.Location);
+    Assert.Equal(entryDto.Participants, entry.Participants);
   }
 }

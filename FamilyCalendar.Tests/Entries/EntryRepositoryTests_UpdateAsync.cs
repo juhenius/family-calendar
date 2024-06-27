@@ -77,7 +77,8 @@ public partial class EntryRepositoryTests
       request.Item["id"].S == entry.Id.ToString() &&
       request.Item["title"].S == entry.Title &&
       IsEqualTo(request.Item["date"].S, entry.Date) &&
-      request.Item["member"].S == entry.Member
+      request.Item["location"].S == entry.Location &&
+      request.Item["participants"].L[0].S == entry.Participants[0]
     ), Arg.Any<CancellationToken>());
   }
 

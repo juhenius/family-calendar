@@ -6,14 +6,35 @@
     {
       <div class="flex flex-col gap-2 card @(Model.IsNewEntry(entry) ? "animate-card-flash" : "")">
         <div class="flex flex-row gap-2">
-          <h3 class="flex-auto break-all card-title">@entry.Title</h3>
+          <h3 class="flex-auto break-all text-sm text-gray-700">@entry.Title</h3>
           <form hx-delete hx-page="Manage" hx-page-handler="DeleteEntry">
-            <button type="submit" class="btn btn-red text-xs">Delete</button>
+            <button type="submit" class="btn btn-red text-xs">
+              @await Html.PartialAsync("~/Pages/Shared/Icons/_Delete.cshtml")
+            </button>
             <input type="hidden" name="EntryId" value="@entry.Id" />
             @Html.AntiForgeryToken()
           </form>
         </div>
-        <p class="card-date">@Html.DisplayFor(_ => entry.Date)</p>
+        <div class="flex flex-row gap-2">
+          <p>
+            <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Date.cshtml")</span>
+            <span class="text-sm text-gray-500">@Html.DisplayFor(_ => entry.Date)</span>
+          </p>
+          @if (!string.IsNullOrEmpty(entry.Location))
+          {
+            <p>
+              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Location.cshtml")</span>
+              <span class="text-sm text-gray-500">@entry.Location</span>
+            </p>
+          }
+          @if (entry.Participants.Count > 0)
+          {
+            <p>
+              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Participant.cshtml")</span>
+              <span class="text-sm text-gray-500">@string.Join(", ", entry.Participants)</span>
+            </p>
+          }
+        </div>
       </div>
     }
   </div>

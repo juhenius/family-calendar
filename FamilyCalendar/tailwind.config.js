@@ -15,6 +15,6 @@ module.exports = {
     },
   },
   plugins: [],
-  // safelist: [{ pattern: /.*/ }]
+  safelist: [{ pattern: /grid-cols-.*/ }]
 }
 

@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using FamilyCalendar.Common;
 using FamilyCalendar.Entries;
+using Microsoft.SemanticKernel;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace FamilyCalendar;
@@ -13,10 +14,12 @@ public class Startup(IConfiguration configuration)
   {
     services.Configure<FamilyCalendarSettings>(Configuration.GetSection("FamilyCalendar"));
 
+    AddOpenAIChatCompletion(services);
     services.AddRazorPages();
     services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
     services.AddSingleton<IEntryRepository, EntryRepository>();
     services.AddSingleton<IPartialViewRenderer, PartialViewRenderer>();
+    services.AddSingleton<IEntryParser, OpenAiEntryParser>();
     services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
       .AddCookie(options =>
       {
@@ -57,5 +60,23 @@ public class Startup(IConfiguration configuration)
     {
       endpoints.MapRazorPages();
     });
+  }
+
+  private void AddOpenAIChatCompletion(IServiceCollection services)
+  {
+    var openAiModelId = Configuration.GetSection("FamilyCalendar:OpenAiModelId").Get<string>();
+    var openAiApiKey = Configuration.GetSection("FamilyCalendar:OpenAiApiKey").Get<string>();
+
+    if (openAiModelId == null)
+    {
+      throw new ArgumentException("invalid FamilyCalendar:OpenAiModelId setting");
+    }
+
+    if (openAiApiKey == null)
+    {
+      throw new ArgumentException("invalid FamilyCalendar:OpenAiApiKey setting");
+    }
+
+    services.AddOpenAIChatCompletion(openAiModelId, openAiApiKey);
   }
 }

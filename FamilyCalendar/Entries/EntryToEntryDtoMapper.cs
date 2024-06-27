@@ -17,7 +17,8 @@ public static class EntryToEntryDtoMapper
       CalendarId = source.CalendarId,
       Title = source.Title,
       Date = source.Date.ToUniversalTime(),
-      Member = source.Member,
+      Location = source.Location,
+      Participants = source.Participants,
     };
   }
 }

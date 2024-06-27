@@ -19,6 +19,8 @@ public partial class EntryRepositoryTests
       DynamoDbTable = _testTableName,
       EntriesByDateIndex = _testEntriesByDateIndex,
       BaseHref = "",
+      OpenAiApiKey = "",
+      OpenAiModelId = "",
       ViewerPassword = "",
       AdministratorPassword = "",
     });
@@ -61,7 +63,7 @@ public partial class EntryRepositoryTests
       CalendarId = Guid.NewGuid(),
       Title = "New Entry",
       Date = DateTimeOffset.UtcNow,
-      Member = "Tester"
+      Participants = ["Tester"]
     };
   }
 }

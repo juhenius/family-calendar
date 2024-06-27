@@ -55,20 +55,6 @@ h3 {
   ;
 }
 
-.card-title {
-  @apply
-    text-sm
-    text-gray-700
-  ;
-}
-
-.card-date {
-  @apply
-    text-sm
-    text-gray-500
-  ;
-}
-
 .form-label {
   @apply
     text-sm
@@ -94,4 +80,11 @@ h3 {
     focus:ring-inset
     focus:ring-indigo-600
   ;
+}
+
+.icon {
+  display: inline;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
 }

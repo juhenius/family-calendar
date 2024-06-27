@@ -23,11 +23,14 @@ public class EntryDto
   [JsonPropertyName("title")]
   public string Title { get; init; } = default!;
 
-  [JsonPropertyName("member")]
-  public string Member { get; init; } = default!;
-
   [JsonPropertyName("date")]
   public DateTimeOffset Date { get; init; }
+
+  [JsonPropertyName("location")]
+  public string? Location { get; init; } = default;
+
+  [JsonPropertyName("participants")]
+  public List<string> Participants { get; init; } = default!;
 
   [JsonPropertyName("updatedAt")]
   public DateTimeOffset UpdatedAt { get; set; }
