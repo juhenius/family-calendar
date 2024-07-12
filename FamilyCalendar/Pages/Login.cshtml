@@ -16,6 +16,10 @@
     <button type="submit" class="btn btn-blue">
       Login
     </button>
+    @if (Model.Message is not null)
+    {
+      <div class="p-2 rounded shadow-sm border-red-300 border text-red-400">@Model.Message</div>
+    }
     @Html.AntiForgeryToken()
   </form>
 

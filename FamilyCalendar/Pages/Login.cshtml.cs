@@ -12,6 +12,7 @@ public class LoginModel(IOptions<FamilyCalendarSettings> settings) : PageModel
 {
   [BindProperty]
   public required InputModel Input { get; set; }
+  public string? Message { get; set; }
 
   private readonly string _viewerPassword = settings.Value.ViewerPassword;
   private readonly string _administratorPassword = settings.Value.AdministratorPassword;
@@ -32,7 +33,8 @@ public class LoginModel(IOptions<FamilyCalendarSettings> settings) : PageModel
 
     if (Input.Password != _viewerPassword && Input.Password != _administratorPassword)
     {
-      return Unauthorized();
+      Message = "Invalid password";
+      return Page();
     }
 
     var claims = new List<Claim>
