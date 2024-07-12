@@ -24,8 +24,26 @@ public class OpenAiEntryParserTests
     var calendarId = Guid.NewGuid();
     await _openAiEntryParser.ParseFromString(input, calendarId, CancellationToken.None);
 
-    await _chatCompletionService.Received(1).GetChatMessageContentsAsync(
+    await _chatCompletionService.Received().GetChatMessageContentsAsync(
       Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, input)),
+      Arg.Any<PromptExecutionSettings>(),
+      Arg.Any<Kernel?>(),
+      Arg.Any<CancellationToken>()
+    );
+  }
+
+  [Fact]
+  public async Task ParseFromString_ValidatesParseResultWithAi()
+  {
+    var reply = new ReplyBuilder().WithTitle("title").WithDate("2024-07-12T20:00:00Z").Build();
+    SetReply(reply);
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    await _openAiEntryParser.ParseFromString(input, calendarId, CancellationToken.None);
+
+    await _chatCompletionService.Received().GetChatMessageContentsAsync(
+      Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, reply)),
       Arg.Any<PromptExecutionSettings>(),
       Arg.Any<Kernel?>(),
       Arg.Any<CancellationToken>()

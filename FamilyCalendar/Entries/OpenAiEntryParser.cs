@@ -9,10 +9,28 @@ namespace FamilyCalendar.Entries;
 public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : IEntryParser
 {
   private readonly IChatCompletionService _chatCompletionService = chatCompletionService;
+  private const double Temperature = 0.2;
 
   public async Task<Entry> ParseFromString(string input, Guid calendarId, CancellationToken cancellationToken = default)
   {
     var chatHistory = new ChatHistory();
+    var unvalidatedEntryJson = await ParseEntry(input, chatHistory, cancellationToken);
+    var validatedEntryJson = await ValidateEntry(unvalidatedEntryJson, chatHistory, cancellationToken);
+    var entry = JsonSerializer.Deserialize<EntryJson>(validatedEntryJson) ?? throw new ArgumentException("unable to parse input");
+
+    return new Entry()
+    {
+      Id = Guid.NewGuid(),
+      CalendarId = calendarId,
+      Title = entry.Title,
+      Date = ParseDate(entry.Date),
+      Location = entry.Location,
+      Participants = entry.Participants ?? [],
+    };
+  }
+
+  private async Task<string> ParseEntry(string input, ChatHistory chatHistory, CancellationToken cancellationToken)
+  {
     chatHistory.AddSystemMessage(
       @$"You are an expert calendar organizer who specializes in turning natural
       language description of an calendar event into a standardized json
@@ -63,20 +81,22 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
 
     chatHistory.AddUserMessage($"Please parse this calendar event: {input}");
 
-    var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.2 };
+    var executionSettings = new OpenAIPromptExecutionSettings { Temperature = Temperature };
     var response = await _chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, null, cancellationToken);
-    var lastMessage = response[response.Count - 1];
-    var json = JsonSerializer.Deserialize<EntryJson>(lastMessage.ToString()) ?? throw new ArgumentException("unable to parse input");
+    return response[response.Count - 1].ToString();
+  }
 
-    return new Entry()
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = calendarId,
-      Title = json.Title,
-      Date = ParseDate(json.Date),
-      Location = json.Location,
-      Participants = json.Participants ?? [],
-    };
+  private async Task<string> ValidateEntry(string entryJson, ChatHistory chatHistory, CancellationToken cancellationToken)
+  {
+    chatHistory.AddUserMessage(
+      @$"Please validate the accuracy of the following json and respond only with the fixed version.
+      Remove also any markdown or other formatting formatting that is not part of json.
+      {entryJson}"
+    );
+
+    var executionSettings = new OpenAIPromptExecutionSettings { Temperature = Temperature };
+    var response = await _chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, null, cancellationToken);
+    return response[response.Count - 1].ToString();
   }
 
   private static DateTimeOffset ParseDate(string input)
