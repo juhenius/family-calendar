@@ -62,6 +62,10 @@ dotnet lambda deploy-serverless
 
 Contributions to the project are welcome. For support or to report issues, please refer to the project's issues page on GitHub.
 
+## Resources
+
+- [Icons](https://www.untitledui.com/free-icons)
+
 ## Author
 
 Jari Helenius
