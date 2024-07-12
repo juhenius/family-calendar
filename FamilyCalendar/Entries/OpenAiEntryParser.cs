@@ -88,7 +88,7 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
   }
 }
 
-sealed internal class EntryJson
+internal sealed class EntryJson
 {
   [JsonPropertyName("title")]
   public required string Title { get; set; } = default!;
