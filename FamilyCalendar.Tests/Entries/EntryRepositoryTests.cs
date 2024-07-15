@@ -63,7 +63,8 @@ public partial class EntryRepositoryTests
       CalendarId = Guid.NewGuid(),
       Title = "New Entry",
       Date = DateTimeOffset.UtcNow,
-      Participants = ["Tester"]
+      Participants = ["Tester"],
+      Prompt = "Doctor Appointment now at Doctors office",
     };
   }
 }

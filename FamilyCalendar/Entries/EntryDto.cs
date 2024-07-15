@@ -32,6 +32,9 @@ public class EntryDto
   [JsonPropertyName("participants")]
   public List<string> Participants { get; init; } = default!;
 
+  [JsonPropertyName("prompt")]
+  public required string Prompt { get; init; }
+
   [JsonPropertyName("updatedAt")]
   public DateTimeOffset UpdatedAt { get; set; }
 }

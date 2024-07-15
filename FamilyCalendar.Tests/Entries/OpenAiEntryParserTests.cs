@@ -135,6 +135,17 @@ public class OpenAiEntryParserTests
     Assert.Empty(entry.Participants);
   }
 
+  [Fact]
+  public async Task ParseFromString_AddsPromptToEntry()
+  {
+    SetDefaultReply();
+
+    var input = "expected input";
+    var entry = await _openAiEntryParser.ParseFromString(input, Guid.NewGuid(), CancellationToken.None);
+
+    Assert.Equal(input, entry.Prompt);
+  }
+
   private void SetDefaultReply()
   {
     SetReply(new ReplyBuilder().Build());

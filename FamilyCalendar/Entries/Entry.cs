@@ -8,6 +8,7 @@ public class Entry
   public required DateTimeOffset Date { get; init; }
   public string? Location { get; init; }
   public required List<string> Participants { get; init; }
+  public required string Prompt { get; init; }
 
   public override bool Equals(object? obj)
   {

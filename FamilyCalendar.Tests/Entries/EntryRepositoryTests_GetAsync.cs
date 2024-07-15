@@ -74,6 +74,7 @@ public partial class EntryRepositoryTests
         { "id", new AttributeValue { S = entryId.ToString() } },
         { "calendarId", new AttributeValue { S = calendarId.ToString() } },
         { "title", new AttributeValue { S = "Entry" } },
+        { "prompt", new AttributeValue { S = "Prompt" } },
       }
     };
     _dynamoDb.GetItemAsync(Arg.Any<GetItemRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(getItemResponse));

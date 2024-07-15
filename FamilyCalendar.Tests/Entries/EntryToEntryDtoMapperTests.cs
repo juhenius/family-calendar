@@ -15,6 +15,7 @@ public class EntryToEntryDtoMapperTests
       Date = DateTimeOffset.UtcNow,
       Location = "Doctors office",
       Participants = ["Tester"],
+      Prompt = "Doctor Appointment now at Doctors office",
     };
 
     var entryDto = entry.ToEntryDto();
@@ -28,6 +29,7 @@ public class EntryToEntryDtoMapperTests
     Assert.Equal(entry.Date, entryDto.Date);
     Assert.Equal(entry.Location, entryDto.Location);
     Assert.Equal(entry.Participants, entryDto.Participants);
+    Assert.Equal(entry.Prompt, entryDto.Prompt);
   }
 
   [Fact]
@@ -40,6 +42,7 @@ public class EntryToEntryDtoMapperTests
       Title = "Doctor Appointment",
       Date = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
       Participants = ["Tester"],
+      Prompt = "Doctor Appointment now at Doctors office",
     };
 
     var entryDto = entry.ToEntryDto();
