@@ -27,6 +27,7 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
       Location = entry.Location,
       Participants = entry.Participants ?? [],
       Prompt = input,
+      CreatedAt = DateTimeOffset.UtcNow,
     };
   }
 

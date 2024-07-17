@@ -146,6 +146,17 @@ public class OpenAiEntryParserTests
     Assert.Equal(input, entry.Prompt);
   }
 
+  [Fact]
+  public async Task ParseFromString_AddsCreatedAtToEntry()
+  {
+    SetDefaultReply();
+
+    var input = "not relevant";
+    var entry = await _openAiEntryParser.ParseFromString(input, Guid.NewGuid(), CancellationToken.None);
+
+    Assert.Equal(DateTimeOffset.UtcNow, entry.CreatedAt, TimeSpan.FromSeconds(1));
+  }
+
   private void SetDefaultReply()
   {
     SetReply(new ReplyBuilder().Build());

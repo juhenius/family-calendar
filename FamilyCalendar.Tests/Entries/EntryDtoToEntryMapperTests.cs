@@ -16,6 +16,7 @@ public class EntryDtoToEntryMapperTests
       Location = "Doctors office",
       Participants = ["Tester"],
       Prompt = "Doctor Appointment now at Doctors office",
+      CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
     };
 
     var entry = entryDto.ToEntry();
@@ -28,5 +29,6 @@ public class EntryDtoToEntryMapperTests
     Assert.Equal(entryDto.Location, entry.Location);
     Assert.Equal(entryDto.Participants, entry.Participants);
     Assert.Equal(entryDto.Prompt, entry.Prompt);
+    Assert.Equal(entryDto.CreatedAt, entry.CreatedAt);
   }
 }

@@ -35,6 +35,9 @@ public class EntryDto
   [JsonPropertyName("prompt")]
   public required string Prompt { get; init; }
 
+  [JsonPropertyName("createdAt")]
+  public required DateTimeOffset CreatedAt { get; init; }
+
   [JsonPropertyName("updatedAt")]
   public DateTimeOffset UpdatedAt { get; set; }
 }

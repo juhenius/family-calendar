@@ -20,6 +20,7 @@ public static class EntryToEntryDtoMapper
       Location = source.Location,
       Participants = source.Participants,
       Prompt = source.Prompt,
+      CreatedAt = source.CreatedAt.ToUniversalTime(),
     };
   }
 }

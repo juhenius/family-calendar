@@ -65,6 +65,7 @@ public partial class EntryRepositoryTests
       Date = DateTimeOffset.UtcNow,
       Participants = ["Tester"],
       Prompt = "Doctor Appointment now at Doctors office",
+      CreatedAt = DateTimeOffset.UtcNow,
     };
   }
 }

@@ -13,6 +13,7 @@ public static class EntryDtoToEntryMapper
       Location = source.Location,
       Participants = source.Participants,
       Prompt = source.Prompt,
+      CreatedAt = source.CreatedAt,
     };
   }
 }
