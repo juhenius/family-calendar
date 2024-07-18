@@ -11,29 +11,35 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
   private readonly IChatCompletionService _chatCompletionService = chatCompletionService;
   private const double Temperature = 0.2;
 
-  public async Task<Entry> ParseFromString(string input, Guid calendarId, CancellationToken cancellationToken = default)
+  public Task<Entry> ParseFromString(string input, Guid calendarId, Guid entryId, CancellationToken cancellationToken = default)
   {
-    var chatHistory = new ChatHistory();
+    return ParseFromString(input, calendarId, entryId, DateTimeOffset.Now, cancellationToken);
+  }
+
+  public async Task<Entry> ParseFromString(string input, Guid calendarId, Guid entryId, DateTimeOffset now, CancellationToken cancellationToken = default)
+  {
+    var chatHistory = InitChatHistory(now);
     var unvalidatedEntryJson = await ParseEntry(input, chatHistory, cancellationToken);
     var validatedEntryJson = await ValidateEntry(unvalidatedEntryJson, chatHistory, cancellationToken);
     var entry = JsonSerializer.Deserialize<EntryJson>(validatedEntryJson) ?? throw new ArgumentException("unable to parse input");
 
     return new Entry()
     {
-      Id = Guid.NewGuid(),
+      Id = entryId,
       CalendarId = calendarId,
       Title = entry.Title,
       Date = ParseDate(entry.Date),
       Location = entry.Location,
       Participants = entry.Participants ?? [],
       Prompt = input,
-      CreatedAt = DateTimeOffset.UtcNow,
+      CreatedAt = now,
     };
   }
 
-  private async Task<string> ParseEntry(string input, ChatHistory chatHistory, CancellationToken cancellationToken)
+  private static ChatHistory InitChatHistory(DateTimeOffset now)
   {
-    chatHistory.AddSystemMessage(
+    var result = new ChatHistory();
+    result.AddSystemMessage(
       @$"You are an expert calendar organizer who specializes in turning natural
       language description of an calendar event into a standardized json
       representation. Your job is to accept text description of an event and reply
@@ -64,8 +70,9 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
         }}
       }}
 
-      Current in UTC time is {DateTimeOffset.UtcNow:s}.
-      Current timezone offset is {DateTimeOffset.Now.Offset}
+      Current in UTC time is {now.ToUniversalTime():s}.
+      Current timezone offset is {now.Offset}
+      Current timezone is Europe/Helsinki
 
       Known participants are:
       - Matti
@@ -81,6 +88,11 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
       If no date is provided, use current time."
     );
 
+    return result;
+  }
+
+  private async Task<string> ParseEntry(string input, ChatHistory chatHistory, CancellationToken cancellationToken)
+  {
     chatHistory.AddUserMessage($"Please parse this calendar event: {input}");
 
     var executionSettings = new OpenAIPromptExecutionSettings { Temperature = Temperature };

@@ -28,7 +28,9 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
       throw new ArgumentException("Parameter EntryInput is missing");
     }
 
-    var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, cancellationToken);
+    var entryId = Guid.NewGuid();
+    var now = DateTimeOffset.Now;
+    var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, entryId, now, cancellationToken);
     var success = await _entryRepository.CreateAsync(entry, cancellationToken);
 
     if (!success)
@@ -44,7 +46,25 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
     ";
 
     return Content(html, "text/html");
+  }
 
+  public async Task<IActionResult> OnPatchReparseEntry([FromForm] Guid entryId, CancellationToken cancellationToken)
+  {
+    var entry = await _entryRepository.GetAsync(CalendarId, entryId, cancellationToken);
+    if (entry is not null)
+    {
+      var now = entry.CreatedAt.ToOffset(DateTimeOffset.Now.Offset);
+      var reparsedEntry = await _entryParser.ParseFromString(entry.Prompt, CalendarId, entry.Id, now, cancellationToken);
+      var success = await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
+      if (!success)
+      {
+        _logger.LogError("Failed to write entry");
+      }
+
+      _newEntries.Add(reparsedEntry);
+    }
+
+    return Partial("_EntryList", GetEntryListModel(true));
   }
 
   public async Task<IActionResult> OnDeleteDeleteEntry([FromForm] Guid entryId, CancellationToken cancellationToken)

@@ -22,10 +22,30 @@ public class OpenAiEntryParserTests
 
     var input = "expected input";
     var calendarId = Guid.NewGuid();
-    await _openAiEntryParser.ParseFromString(input, calendarId, CancellationToken.None);
+    var entryId = Guid.NewGuid();
+    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     await _chatCompletionService.Received().GetChatMessageContentsAsync(
       Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, input)),
+      Arg.Any<PromptExecutionSettings>(),
+      Arg.Any<Kernel?>(),
+      Arg.Any<CancellationToken>()
+    );
+  }
+
+  [Fact]
+  public async Task ParseFromString_UsesGivenCurrentTime()
+  {
+    SetDefaultReply();
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var now = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
+    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, now, CancellationToken.None);
+
+    await _chatCompletionService.Received().GetChatMessageContentsAsync(
+      Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, now.ToUniversalTime().ToString("s")) && ChatHistoryContains(chat, now.Offset.ToString())),
       Arg.Any<PromptExecutionSettings>(),
       Arg.Any<Kernel?>(),
       Arg.Any<CancellationToken>()
@@ -40,7 +60,8 @@ public class OpenAiEntryParserTests
 
     var input = "not relevant";
     var calendarId = Guid.NewGuid();
-    await _openAiEntryParser.ParseFromString(input, calendarId, CancellationToken.None);
+    var entryId = Guid.NewGuid();
+    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     await _chatCompletionService.Received().GetChatMessageContentsAsync(
       Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, reply)),
@@ -51,12 +72,41 @@ public class OpenAiEntryParserTests
   }
 
   [Fact]
+  public async Task ParseFromString_SetsGivenEntryId()
+  {
+    SetDefaultReply();
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+
+    Assert.Equal(entryId, entry.Id);
+  }
+
+  [Fact]
+  public async Task ParseFromString_SetsGivenCalenarId()
+  {
+    SetDefaultReply();
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+
+    Assert.Equal(calendarId, entry.CalendarId);
+  }
+
+  [Fact]
   public async Task ParseFromString_ParsesTitleFromResponse()
   {
     var title = "expected title";
     SetReply(new ReplyBuilder().WithTitle(title).Build());
 
-    var entry = await _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None);
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(title, entry.Title);
   }
@@ -66,7 +116,10 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithTitle(null).Build());
 
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None));
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
   }
 
   [Fact]
@@ -74,7 +127,10 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithDate("2024-06-10T20:00:00Z").Build());
 
-    var entry = await _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None);
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(new DateTimeOffset(2024, 6, 10, 20, 0, 0, TimeSpan.Zero), entry.Date);
   }
@@ -83,14 +139,22 @@ public class OpenAiEntryParserTests
   public async Task ParseFromString_ThrowsWhenDateIsMissingFromResponse()
   {
     SetReply(new ReplyBuilder().WithDate(null).Build());
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None));
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
   }
 
   [Fact]
   public async Task ParseFromString_ThrowsWhenDateIsNotCorrectlyFormatedInResponse()
   {
     SetReply(new ReplyBuilder().WithDate("2024-06-10T20:00:00").Build());
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None));
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
   }
 
   [Fact]
@@ -99,7 +163,10 @@ public class OpenAiEntryParserTests
     var location = "expected location";
     SetReply(new ReplyBuilder().WithLocation(location).Build());
 
-    var entry = await _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None);
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(location, entry.Location);
   }
@@ -109,7 +176,10 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithLocation(null).Build());
 
-    var exception = await Record.ExceptionAsync(() => _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None));
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var exception = await Record.ExceptionAsync(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
 
     Assert.Null(exception);
   }
@@ -120,7 +190,10 @@ public class OpenAiEntryParserTests
     List<string> participants = ["expected participant 1", "expected participant 1"];
     SetReply(new ReplyBuilder().WithParticipants(participants).Build());
 
-    var entry = await _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None);
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(participants, entry.Participants);
   }
@@ -130,7 +203,10 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithParticipants(null).Build());
 
-    var entry = await _openAiEntryParser.ParseFromString("not relevant", Guid.NewGuid(), CancellationToken.None);
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Empty(entry.Participants);
   }
@@ -141,7 +217,9 @@ public class OpenAiEntryParserTests
     SetDefaultReply();
 
     var input = "expected input";
-    var entry = await _openAiEntryParser.ParseFromString(input, Guid.NewGuid(), CancellationToken.None);
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(input, entry.Prompt);
   }
@@ -152,9 +230,25 @@ public class OpenAiEntryParserTests
     SetDefaultReply();
 
     var input = "not relevant";
-    var entry = await _openAiEntryParser.ParseFromString(input, Guid.NewGuid(), CancellationToken.None);
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
 
     Assert.Equal(DateTimeOffset.UtcNow, entry.CreatedAt, TimeSpan.FromSeconds(1));
+  }
+
+  [Fact]
+  public async Task ParseFromString_AddsManuallySetCreatedAtToEntry()
+  {
+    SetDefaultReply();
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var now = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, now, CancellationToken.None);
+
+    Assert.Equal(now, entry.CreatedAt, TimeSpan.FromSeconds(1));
   }
 
   private void SetDefaultReply()
