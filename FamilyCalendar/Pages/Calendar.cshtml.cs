@@ -15,7 +15,7 @@ public class CalendarModel(IEntryRepository entryRepository) : PageModel
 
   public IActionResult OnGetRefresh()
   {
-    return Partial("_Calendar", this);
+    return Partial("Calendar/_Calendar", this);
   }
 
   public async Task<IEnumerable<Entry>> GetEntriesAsync()

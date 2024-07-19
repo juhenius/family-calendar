@@ -41,8 +41,8 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
     _newEntries.Add(entry);
 
     var html = $@"
-      {await _partialViewRenderer.RenderPartialViewToStringAsync("_AddEntry", this, PageContext, TempData)}
-      {await _partialViewRenderer.RenderPartialViewToStringAsync("_EntryList", GetEntryListModel(true), PageContext, TempData)}
+      {await _partialViewRenderer.RenderPartialViewToStringAsync("Manage/_AddEntry", this, PageContext, TempData)}
+      {await _partialViewRenderer.RenderPartialViewToStringAsync("Manage/_EntryList", GetEntryListModel(true), PageContext, TempData)}
     ";
 
     return Content(html, "text/html");
@@ -64,7 +64,7 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
       _newEntries.Add(reparsedEntry);
     }
 
-    return Partial("_EntryList", GetEntryListModel(true));
+    return Partial("Manage/_EntryList", GetEntryListModel(true));
   }
 
   public async Task<IActionResult> OnDeleteDeleteEntry([FromForm] Guid entryId, CancellationToken cancellationToken)
@@ -76,7 +76,7 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
       _logger.LogError("Failed to delete entry");
     }
 
-    return Partial("_EntryList", GetEntryListModel(true));
+    return Partial("Manage/_EntryList", GetEntryListModel(true));
   }
 
   public EntryListModel GetEntryListModel(bool outOfBandSwap)
