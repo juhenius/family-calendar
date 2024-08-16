@@ -1,0 +1,15 @@
+@model IndexModel
+
+<form hx-post hx-page="Index" hx-page-handler="AddEntry" hx-swap="outerHTML" class="space-y-4">
+  <div>
+    <label asp-for="EntryInput" class="block form-label">Entry</label>
+    <input type="text" asp-for="EntryInput" class="block w-full mt-1 form-input">
+  </div>
+  <div class="flex flex-row justify-end">
+    <button type="submit" class="btn btn-blue w-24 flex flex-col items-center">
+      <span class="hide-on-loading">Add</span>
+      @await Html.PartialAsync("~/Pages/Shared/Icons/_LoadingIndicator.cshtml")
+    </button>
+  </div>
+  @Html.AntiForgeryToken()
+</form>

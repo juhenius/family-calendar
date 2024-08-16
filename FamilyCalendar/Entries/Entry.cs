@@ -26,4 +26,27 @@ public class Entry
   {
     return Id.GetHashCode();
   }
+
+  public Entry With(
+    Guid? id = null,
+    Guid? calendarId = null,
+    string? title = null,
+    DateTimeOffset? date = null,
+    string? location = null,
+    List<string>? participants = null,
+    string? prompt = null,
+    DateTimeOffset? createdAt = null)
+  {
+    return new Entry
+    {
+      Id = id ?? Id,
+      CalendarId = calendarId ?? CalendarId,
+      Title = title ?? Title,
+      Date = date ?? Date,
+      Location = location ?? Location,
+      Participants = participants ?? Participants,
+      Prompt = prompt ?? Prompt,
+      CreatedAt = createdAt ?? CreatedAt
+    };
+  }
 }

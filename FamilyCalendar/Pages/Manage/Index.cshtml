@@ -1,0 +1,10 @@
+﻿@page "{calendarId:guid}"
+@model IndexModel
+@{
+  ViewData["Title"] = "Manage";
+}
+
+<div class="p-4 flex flex-col gap-4">
+  @await Html.PartialAsync("_AddEntry")
+  @await Html.PartialAsync("_EntryList", Model.GetPartialEntryListModel(false))
+</div>

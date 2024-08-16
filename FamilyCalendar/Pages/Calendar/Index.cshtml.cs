@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FamilyCalendar.Pages;
+namespace FamilyCalendar.Pages.Calendar;
 
 [Authorize]
-public class CalendarModel(IEntryRepository entryRepository) : PageModel
+public class IndexModel(IEntryRepository entryRepository) : PageModel
 {
   private readonly IEntryRepository _entryRepository = entryRepository;
 

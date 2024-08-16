@@ -1,0 +1,10 @@
+@model PartialEntryListModel
+
+<div id="entryList" @(Model.OutOfBandSwap ? "hx-swap-oob=\"true\"" : "") class="flex flex-col gap-2">
+  @foreach (var entry in await Model.GetEntriesAsync())
+  {
+    <div class="@(Model.IsNewEntry(entry) ? "animate-card-flash" : "")">
+      @await Html.PartialAsync("_StaticEntryRow", new PartialStaticEntryRowModel(entry))
+    </div>
+  }
+</div>

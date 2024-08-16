@@ -6,16 +6,18 @@
 }
 
 <div class="p-4">
-  <form method="post" class="space-y-4">
+  <form method="post" class="flex flex-col gap-4">
     <div asp-validation-summary="All" class="text-red-400"></div>
     <div>
       <label asp-for="Input.Password" class="block form-label">Password</label>
       <input asp-for="Input.Password" class="block w-full mt-1 form-input">
       <span asp-validation-for="Input.Password" class="text-red-400"></span>
     </div>
-    <button type="submit" class="btn btn-blue">
-      Login
-    </button>
+    <div class="flex flex-row justify-end">
+      <button type="submit" class="btn btn-blue">
+        Login
+      </button>
+    </div>
     @if (Model.Message is not null)
     {
       <div class="p-2 rounded shadow-sm border-red-300 border text-red-400">@Model.Message</div>

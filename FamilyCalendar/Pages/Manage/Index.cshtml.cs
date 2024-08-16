@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
 
-namespace FamilyCalendar.Pages;
+namespace FamilyCalendar.Pages.Manage;
 
 [Authorize(Roles = "Administrator")]
-public class ManageModel(IEntryRepository entryRepository, IEntryParser entryParser, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
+public class IndexModel(IEntryRepository entryRepository, IEntryParser entryParser, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
 {
   private readonly ILogger<IndexModel> _logger = logger;
   private readonly IEntryRepository _entryRepository = entryRepository;
@@ -25,7 +25,7 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
   {
     if (string.IsNullOrEmpty(EntryInput))
     {
-      throw new ArgumentException("Parameter EntryInput is missing");
+      return BadRequest();
     }
 
     var entryId = Guid.NewGuid();
@@ -33,41 +33,24 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
     var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, entryId, now, cancellationToken);
     var success = await _entryRepository.CreateAsync(entry, cancellationToken);
 
-    if (!success)
+    if (success)
+    {
+      _newEntries.Add(entry);
+    }
+    else
     {
       _logger.LogError("Failed to write entry");
     }
 
-    _newEntries.Add(entry);
-
     var html = $@"
-      {await _partialViewRenderer.RenderPartialViewToStringAsync("Manage/_AddEntry", this, PageContext, TempData)}
-      {await _partialViewRenderer.RenderPartialViewToStringAsync("Manage/_EntryList", GetEntryListModel(true), PageContext, TempData)}
+      {await _partialViewRenderer.RenderPartialViewToStringAsync("_AddEntry", this, PageContext, TempData)}
+      {await _partialViewRenderer.RenderPartialViewToStringAsync("_EntryList", GetPartialEntryListModel(true), PageContext, TempData)}
     ";
 
     return Content(html, "text/html");
   }
 
-  public async Task<IActionResult> OnPatchReparseEntry([FromForm] Guid entryId, CancellationToken cancellationToken)
-  {
-    var entry = await _entryRepository.GetAsync(CalendarId, entryId, cancellationToken);
-    if (entry is not null)
-    {
-      var now = entry.CreatedAt.ToOffset(DateTimeOffset.Now.Offset);
-      var reparsedEntry = await _entryParser.ParseFromString(entry.Prompt, CalendarId, entry.Id, now, cancellationToken);
-      var success = await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
-      if (!success)
-      {
-        _logger.LogError("Failed to write entry");
-      }
-
-      _newEntries.Add(reparsedEntry);
-    }
-
-    return Partial("Manage/_EntryList", GetEntryListModel(true));
-  }
-
-  public async Task<IActionResult> OnDeleteDeleteEntry([FromForm] Guid entryId, CancellationToken cancellationToken)
+  public async Task<IActionResult> OnDeleteDeleteEntryAsync([FromForm] Guid entryId, CancellationToken cancellationToken)
   {
     var success = await _entryRepository.DeleteAsync(CalendarId, entryId, cancellationToken);
 
@@ -76,12 +59,12 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
       _logger.LogError("Failed to delete entry");
     }
 
-    return Partial("Manage/_EntryList", GetEntryListModel(true));
+    return Partial("_EntryList", GetPartialEntryListModel(true));
   }
 
-  public EntryListModel GetEntryListModel(bool outOfBandSwap)
+  public PartialEntryListModel GetPartialEntryListModel(bool outOfBandSwap)
   {
-    return new EntryListModel(_entryRepository)
+    return new PartialEntryListModel(_entryRepository)
     {
       CalendarId = CalendarId,
       NewEntries = _newEntries,
@@ -90,7 +73,7 @@ public class ManageModel(IEntryRepository entryRepository, IEntryParser entryPar
   }
 }
 
-public class EntryListModel(IEntryRepository entryRepository)
+public class PartialEntryListModel(IEntryRepository entryRepository)
 {
   private readonly IEntryRepository _entryRepository = entryRepository;
 

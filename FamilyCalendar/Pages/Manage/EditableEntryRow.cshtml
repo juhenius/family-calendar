@@ -1,0 +1,62 @@
+﻿@page "{calendarId:guid}/{entryId:guid}"
+@model EditableEntryRowModel
+@{
+  ViewData["Title"] = "Edit Entry";
+  var entry = Model.Entry;
+}
+
+<div hx-target="this" class="flex flex-col gap-2 card">
+  <div class="flex flex-row gap-2">
+    <h3 hx-get hx-page="StaticEntryRow" hx-route-entryId="@entry.Id" hx-route-calendarId="@entry.CalendarId"
+      hx-swap="outerHTML" class="flex-auto break-all text-sm text-gray-700 cursor-pointer">
+      @entry.Title
+    </h3>
+    <form hx-patch hx-page="StaticEntryRow" hx-page-handler="ReparseEntry" hx-route-entryId="@entry.Id"
+      hx-route-calendarId="@entry.CalendarId" hx-swap="outerHTML">
+      <button type="submit" class="btn btn-blue text-xs">
+        @await Html.PartialAsync("~/Pages/Shared/Icons/_Reparse.cshtml")
+      </button>
+      @Html.AntiForgeryToken()
+    </form>
+    <form hx-delete hx-page="Index" hx-page-handler="DeleteEntry" hx-route-calendarId="@entry.CalendarId">
+      <button type="submit" class="btn btn-red text-xs">
+        @await Html.PartialAsync("~/Pages/Shared/Icons/_Delete.cshtml")
+      </button>
+      <input type="hidden" name="EntryId" value="@entry.Id" />
+      @Html.AntiForgeryToken()
+    </form>
+  </div>
+  <form hx-patch hx-page="EditableEntryRow" hx-route-entryId="@entry.Id" hx-route-calendarId="@entry.CalendarId"
+    hx-swap="outerHTML">
+    <div asp-validation-summary="ModelOnly" class="text-red-400 mb-4"></div>
+    <div class="flex flex-col gap-4">
+      <div>
+        <label asp-for="Input.Title" class="block form-label">Title</label>
+        <input asp-for="Input.Title" class="block w-full mt-1 form-input">
+        <span asp-validation-for="Input.Title" class="text-red-400"></span>
+      </div>
+      <div>
+        <label asp-for="Input.Date" class="block form-label">Date</label>
+        <input asp-for="Input.Date" class="block w-full mt-1 form-input">
+        <span asp-validation-for="Input.Date" class="text-red-400"></span>
+      </div>
+      <div>
+        <label asp-for="Input.Location" class="block form-label">Location</label>
+        <input asp-for="Input.Location" class="block w-full mt-1 form-input">
+        <span asp-validation-for="Input.Location" class="text-red-400"></span>
+      </div>
+      <div>
+        <label asp-for="Input.Participants" class="block form-label">Participants</label>
+        <input asp-for="Input.Participants" class="block w-full mt-1 form-input">
+        <span asp-validation-for="Input.Participants" class="text-red-400"></span>
+      </div>
+      <div class="flex flex-row justify-end">
+        <button type="submit" class="btn btn-blue w-24 flex flex-col items-center">
+          <span class="hide-on-loading">Save</span>
+          @await Html.PartialAsync("~/Pages/Shared/Icons/_LoadingIndicator.cshtml")
+        </button>
+      </div>
+    </div>
+    @Html.AntiForgeryToken()
+  </form>
+</div>

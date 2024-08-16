@@ -88,3 +88,31 @@ h3 {
   height: 1em;
   vertical-align: -0.125em;
 }
+
+.loading-indicator {
+  display: none;
+}
+
+.htmx-request .loading-indicator {
+  display: inline;
+}
+
+.htmx-request.loading-indicator {
+  display: inline;
+}
+
+.hide-on-loading {
+  display: inline;
+}
+
+.htmx-request .hide-on-loading {
+  display: none;
+}
+
+.htmx-request.hide-on-loading {
+  display: none;
+}
+
+.validation-summary-valid {
+  display: none;
+}

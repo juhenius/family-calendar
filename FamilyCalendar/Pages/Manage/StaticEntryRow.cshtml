@@ -1,0 +1,4 @@
+@page "{calendarId:guid}/{entryId:guid}"
+@model StaticEntryRowModel
+
+@await Html.PartialAsync("_StaticEntryRow", new PartialStaticEntryRowModel(Model.Entry))

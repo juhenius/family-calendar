@@ -1,0 +1,47 @@
+@model PartialStaticEntryRowModel;
+@{
+  var entry = Model.Entry;
+}
+
+<div hx-target="this" class="flex flex-col gap-2 card">
+  <div class="flex flex-row gap-2">
+    <h3 hx-get hx-page="EditableEntryRow" hx-route-entryId="@entry.Id" hx-route-calendarId="@entry.CalendarId"
+      hx-swap="outerHTML" class="flex-auto break-all text-sm text-gray-700 cursor-pointer">
+      @entry.Title
+    </h3>
+    <form hx-patch hx-page="StaticEntryRow" hx-page-handler="ReparseEntry" hx-route-entryId="@entry.Id"
+      hx-route-calendarId="@entry.CalendarId" hx-swap="outerHTML">
+      <button type="submit" class="btn btn-blue text-xs">
+        @await Html.PartialAsync("~/Pages/Shared/Icons/_Reparse.cshtml")
+      </button>
+      @Html.AntiForgeryToken()
+    </form>
+    <form hx-delete hx-page="Index" hx-page-handler="DeleteEntry" hx-route-calendarId="@entry.CalendarId">
+      <button type="submit" class="btn btn-red text-xs">
+        @await Html.PartialAsync("~/Pages/Shared/Icons/_Delete.cshtml")
+      </button>
+      <input type="hidden" name="EntryId" value="@entry.Id" />
+      @Html.AntiForgeryToken()
+    </form>
+  </div>
+  <div class="flex flex-row gap-2">
+    <p>
+      <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Date.cshtml")</span>
+      <span class="text-sm text-gray-500">@Html.DisplayFor(_ => entry.Date)</span>
+    </p>
+    @if (!string.IsNullOrEmpty(entry.Location))
+    {
+      <p>
+        <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Location.cshtml")</span>
+        <span class="text-sm text-gray-500">@entry.Location</span>
+      </p>
+    }
+    @if (entry.Participants.Count > 0)
+    {
+      <p>
+        <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Participant.cshtml")</span>
+        <span class="text-sm text-gray-500">@string.Join(", ", entry.Participants)</span>
+      </p>
+    }
+  </div>
+</div>
