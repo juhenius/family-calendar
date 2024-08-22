@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace FamilyCalendar.Pages.Manage;
 
 [Authorize(Roles = "Administrator")]
-public class IndexModel(IEntryRepository entryRepository, IEntryParser entryParser, IPartialViewRenderer partialViewRenderer, ILogger<IndexModel> logger) : PageModel
+public class IndexModel(IEntryRepository entryRepository, IEntryParser entryParser, IPartialViewRenderer partialViewRenderer) : PageModel
 {
-  private readonly ILogger<IndexModel> _logger = logger;
   private readonly IEntryRepository _entryRepository = entryRepository;
   private readonly IPartialViewRenderer _partialViewRenderer = partialViewRenderer;
   private readonly IEntryParser _entryParser = entryParser;
@@ -31,16 +30,8 @@ public class IndexModel(IEntryRepository entryRepository, IEntryParser entryPars
     var entryId = Guid.NewGuid();
     var now = DateTimeOffset.Now;
     var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, entryId, now, cancellationToken);
-    var success = await _entryRepository.CreateAsync(entry, cancellationToken);
-
-    if (success)
-    {
-      _newEntries.Add(entry);
-    }
-    else
-    {
-      _logger.LogError("Failed to write entry");
-    }
+    await _entryRepository.CreateAsync(entry, cancellationToken);
+    _newEntries.Add(entry);
 
     var html = $@"
       {await _partialViewRenderer.RenderPartialViewToStringAsync("_AddEntry", this, PageContext, TempData)}
@@ -52,13 +43,7 @@ public class IndexModel(IEntryRepository entryRepository, IEntryParser entryPars
 
   public async Task<IActionResult> OnDeleteDeleteEntryAsync([FromForm] Guid entryId, CancellationToken cancellationToken)
   {
-    var success = await _entryRepository.DeleteAsync(CalendarId, entryId, cancellationToken);
-
-    if (!success)
-    {
-      _logger.LogError("Failed to delete entry");
-    }
-
+    await _entryRepository.DeleteAsync(CalendarId, entryId, cancellationToken);
     return Partial("_EntryList", GetPartialEntryListModel(true));
   }
 

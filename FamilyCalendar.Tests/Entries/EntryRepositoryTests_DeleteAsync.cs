@@ -14,7 +14,7 @@ public partial class EntryRepositoryTests
     var deleteItemResponse = new DeleteItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.DeleteItemAsync(Arg.Any<DeleteItemRequest>(), Arg.Any<CancellationToken>()).Returns(deleteItemResponse);
 
-    var result = await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
+    await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
 
     await _dynamoDb.Received(1).DeleteItemAsync(Arg.Is<DeleteItemRequest>(request =>
         request.TableName == _testTableName
@@ -29,7 +29,7 @@ public partial class EntryRepositoryTests
     var deleteItemResponse = new DeleteItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.DeleteItemAsync(Arg.Any<DeleteItemRequest>(), Arg.Any<CancellationToken>()).Returns(deleteItemResponse);
 
-    var result = await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
+    await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
 
     await _dynamoDb.Received(1).DeleteItemAsync(Arg.Is<DeleteItemRequest>(request =>
         request.Key["pk"].S == calendarId.ToString()
@@ -52,28 +52,27 @@ public partial class EntryRepositoryTests
   }
 
   [Fact]
-  public async Task DeleteAsync_ReturnsTrue_WhenEntryIsDeleted()
+  public async Task DeleteAsync_ReturnsWhenEntryIsDeleted()
   {
     var calendarId = Guid.NewGuid();
     var entryId = Guid.NewGuid();
     var deleteItemResponse = new DeleteItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.DeleteItemAsync(Arg.Any<DeleteItemRequest>(), Arg.Any<CancellationToken>()).Returns(deleteItemResponse);
 
-    var result = await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
+    var exception = await Xunit.Record.ExceptionAsync(() => _repository.DeleteAsync(calendarId, entryId, CancellationToken.None));
 
-    Assert.True(result);
+    Assert.Null(exception);
+
   }
 
   [Fact]
-  public async Task DeleteAsync_ReturnsFalse_WhenDeleteFails()
+  public async Task DeleteAsync_ThrowsWhenDeleteFails()
   {
     var calendarId = Guid.NewGuid();
     var entryId = Guid.NewGuid();
     var deleteItemResponse = new DeleteItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.DeleteItemAsync(Arg.Any<DeleteItemRequest>(), Arg.Any<CancellationToken>()).Returns(deleteItemResponse);
 
-    var result = await _repository.DeleteAsync(calendarId, entryId, CancellationToken.None);
-
-    Assert.False(result);
+    await Assert.ThrowsAnyAsync<Exception>(() => _repository.DeleteAsync(calendarId, entryId, CancellationToken.None));
   }
 }

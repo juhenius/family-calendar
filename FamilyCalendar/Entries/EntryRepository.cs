@@ -65,7 +65,7 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     return response.Items.Select(ToEntry).Where(x => x is not null).Select(e => e!);
   }
 
-  public async Task<bool> CreateAsync(Entry entry, CancellationToken cancellationToken)
+  public async Task CreateAsync(Entry entry, CancellationToken cancellationToken)
   {
     var entryDto = entry.ToEntryDto();
     entryDto.UpdatedAt = DateTimeOffset.UtcNow;
@@ -79,10 +79,13 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     };
 
     var response = await _dynamoDb.PutItemAsync(createItemRequest, cancellationToken);
-    return response.HttpStatusCode == HttpStatusCode.OK;
+    if (response.HttpStatusCode != HttpStatusCode.OK)
+    {
+      throw new OperationFailedException("Create failed");
+    }
   }
 
-  public async Task<bool> UpdateAsync(Entry entry, CancellationToken cancellationToken)
+  public async Task UpdateAsync(Entry entry, CancellationToken cancellationToken)
   {
     var entryDto = entry.ToEntryDto();
     entryDto.UpdatedAt = DateTimeOffset.UtcNow;
@@ -95,10 +98,13 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     };
 
     var response = await _dynamoDb.PutItemAsync(updateItemRequest, cancellationToken);
-    return response.HttpStatusCode == HttpStatusCode.OK;
+    if (response.HttpStatusCode != HttpStatusCode.OK)
+    {
+      throw new OperationFailedException("Update failed");
+    }
   }
 
-  public async Task<bool> DeleteAsync(Guid calendarId, Guid entryId, CancellationToken cancellationToken)
+  public async Task DeleteAsync(Guid calendarId, Guid entryId, CancellationToken cancellationToken)
   {
     var deletedItemRequest = new DeleteItemRequest
     {
@@ -110,7 +116,10 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     };
 
     var response = await _dynamoDb.DeleteItemAsync(deletedItemRequest, cancellationToken);
-    return response.HttpStatusCode == HttpStatusCode.OK;
+    if (response.HttpStatusCode != HttpStatusCode.OK)
+    {
+      throw new OperationFailedException("Delete failed");
+    }
   }
 
   private static Dictionary<string, AttributeValue> ToAttributes(EntryDto entryDto)
@@ -124,4 +133,13 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     var json = Document.FromAttributeMap(attributes).ToJson();
     return JsonSerializer.Deserialize<EntryDto>(json)?.ToEntry();
   }
+}
+
+public class OperationFailedException : Exception
+{
+  public OperationFailedException() { }
+
+  public OperationFailedException(string message) : base(message) { }
+
+  public OperationFailedException(string message, Exception inner) : base(message, inner) { }
 }

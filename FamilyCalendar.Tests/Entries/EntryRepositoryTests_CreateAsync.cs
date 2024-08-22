@@ -24,7 +24,7 @@ public partial class EntryRepositoryTests
   public async Task CreateAsync_SetsCalendarIdAsPartitionKey()
   {
     var entry = CreateTestEntry();
-    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
+    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
@@ -38,7 +38,7 @@ public partial class EntryRepositoryTests
   public async Task CreateAsync_SetsEntryIdWithPrefixAsSortingKey()
   {
     var entry = CreateTestEntry();
-    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
+    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
@@ -53,7 +53,7 @@ public partial class EntryRepositoryTests
   {
     var entry = CreateTestEntry();
     var now = DateTimeOffset.UtcNow;
-    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
+    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
@@ -68,7 +68,7 @@ public partial class EntryRepositoryTests
   public async Task CreateAsync_SetsEntryAttributes()
   {
     var entry = CreateTestEntry();
-    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
+    var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
     await _repository.CreateAsync(entry, CancellationToken.None);
@@ -83,26 +83,24 @@ public partial class EntryRepositoryTests
   }
 
   [Fact]
-  public async Task CreateAsync_ReturnsTrue_WhenEntryIsCreated()
+  public async Task CreateAsync_ReturnsWhenEntryIsCreated()
   {
     var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
-    var result = await _repository.CreateAsync(entry, CancellationToken.None);
+    var exception = await Xunit.Record.ExceptionAsync(() => _repository.CreateAsync(entry, CancellationToken.None));
 
-    Assert.True(result);
+    Assert.Null(exception);
   }
 
   [Fact]
-  public async Task CreateAsync_ReturnsFalse_WhenCreateFails()
+  public async Task CreateAsync_ThrowsWhenCreateFails()
   {
     var entry = CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
-    var result = await _repository.CreateAsync(entry, CancellationToken.None);
-
-    Assert.False(result);
+    await Assert.ThrowsAnyAsync<Exception>(() => _repository.CreateAsync(entry, CancellationToken.None));
   }
 }

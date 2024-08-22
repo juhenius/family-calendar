@@ -6,11 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace FamilyCalendar.Pages.Manage;
 
 [Authorize(Roles = "Administrator")]
-public class StaticEntryRowModel(IEntryRepository entryRepository, IEntryParser entryParser, ILogger<StaticEntryRowModel> logger) : PageModel
+public class StaticEntryRowModel(IEntryRepository entryRepository, IEntryParser entryParser) : PageModel
 {
   private readonly IEntryRepository _entryRepository = entryRepository;
   private readonly IEntryParser _entryParser = entryParser;
-  private readonly ILogger<StaticEntryRowModel> _logger = logger;
 
   [BindProperty(SupportsGet = true)]
   public required Guid CalendarId { get; set; }
@@ -47,13 +46,9 @@ public class StaticEntryRowModel(IEntryRepository entryRepository, IEntryParser 
       return BadRequest();
     }
 
-    var success = await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
-    if (!success)
-    {
-      _logger.LogError("Failed to write entry");
-    }
-
+    await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
     Entry = reparsedEntry;
+
     return Page();
   }
 }

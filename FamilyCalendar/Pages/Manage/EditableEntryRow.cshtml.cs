@@ -7,9 +7,8 @@ using System.ComponentModel.DataAnnotations;
 namespace FamilyCalendar.Pages.Manage;
 
 [Authorize(Roles = "Administrator")]
-public class EditableEntryRowModel(IEntryRepository entryRepository, ILogger<EditableEntryRowModel> logger) : PageModel
+public class EditableEntryRowModel(IEntryRepository entryRepository) : PageModel
 {
-  private readonly ILogger<EditableEntryRowModel> _logger = logger;
   private readonly IEntryRepository _entryRepository = entryRepository;
 
   [BindProperty(SupportsGet = true)]
@@ -75,12 +74,7 @@ public class EditableEntryRowModel(IEntryRepository entryRepository, ILogger<Edi
       participants: ParseParticipants(Input.Participants)
     );
 
-    var success = await _entryRepository.UpdateAsync(updatedEntry, cancellationToken);
-    if (!success)
-    {
-      _logger.LogError("Failed to update entry");
-    }
-
+    await _entryRepository.UpdateAsync(updatedEntry, cancellationToken);
     Entry = updatedEntry;
     return Page();
   }
