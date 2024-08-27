@@ -29,3 +29,9 @@ public class IndexModel(IEntryRepository entryRepository) : PageModel
     return entryDtos.OrderBy(e => e.Date.ToString("s"));
   }
 }
+
+public class PartialCalendarColumnModel
+{
+  public required string Participant { get; init; }
+  public required IEnumerable<Entry> Entries { get; init; }
+}

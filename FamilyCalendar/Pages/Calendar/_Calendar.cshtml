@@ -1,39 +1,30 @@
+@using FamilyCalendar.Entries
+@using Microsoft.AspNetCore.Html
 @model IndexModel
 
 @{
   var entries = await Model.GetEntriesAsync();
   var participants = entries.SelectMany(entry => entry.Participants).Distinct().ToList();
+  var unassignedEntries = entries.Where(entry => entry.Participants.Count == 0).ToList();
+  var columnCount = participants.Count + (unassignedEntries.Count > 0 ? 1 : 0);
 }
 
-<div id="calendar" class="grid grid-cols-@participants.Count gap-5">
+<div id="calendar" class="grid grid-cols-@columnCount gap-5">
   @foreach (var participant in participants)
   {
-    <div class="flex flex-col gap-2">
-      <h2 class="text-gray-700">@participant</h2>
-      @foreach (var entry in entries.Where(entry => entry.Participants.Contains(participant)))
-      {
-        <div class="flex flex-col gap-2 card">
-          <h3 class="flex-auto break-all card-title">@entry.Title</h3>
-          <p>
-            <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Date.cshtml")</span>
-            <span class="text-sm text-gray-500">@Html.DisplayFor(_ => entry.Date)</span>
-          </p>
-          @if (!string.IsNullOrEmpty(entry.Location))
-          {
-            <p>
-              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Location.cshtml")</span>
-              <span class="text-sm text-gray-500">@entry.Location</span>
-            </p>
-          }
-          @if (entry.Participants.Count > 0)
-          {
-            <p>
-              <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Participant.cshtml")</span>
-              <span class="text-sm text-gray-500">@string.Join(", ", entry.Participants)</span>
-            </p>
-          }
-        </div>
-      }
-    </div>
+    @await Html.PartialAsync("_CalendarColumn.cshtml", new PartialCalendarColumnModel
+{
+  Participant = participant,
+  Entries = entries.Where(entry => entry.Participants.Contains(participant))
+})
+  }
+
+  @if (unassignedEntries.Count > 0)
+  {
+    @await Html.PartialAsync("_CalendarColumn.cshtml", new PartialCalendarColumnModel
+{
+  Participant = "Unassigned",
+  Entries = unassignedEntries
+})
   }
 </div>

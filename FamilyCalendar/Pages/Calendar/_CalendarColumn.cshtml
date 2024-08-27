@@ -1,0 +1,29 @@
+@model PartialCalendarColumnModel
+
+<div class="flex flex-col gap-2">
+  <h2 class="text-gray-700">@Model.Participant</h2>
+  @foreach (var entry in Model.Entries)
+  {
+    <div class="flex flex-col gap-2 card">
+      <h3 class="flex-auto break-all card-title">@entry.Title</h3>
+      <p>
+        <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Date.cshtml")</span>
+        <span class="text-sm text-gray-500">@Html.DisplayFor(_ => entry.Date)</span>
+      </p>
+      @if (!string.IsNullOrEmpty(entry.Location))
+      {
+        <p>
+          <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Location.cshtml")</span>
+          <span class="text-sm text-gray-500">@entry.Location</span>
+        </p>
+      }
+      @if (entry.Participants.Count > 0)
+      {
+        <p>
+          <span class="text-red-500">@await Html.PartialAsync("~/Pages/Shared/Icons/_Participant.cshtml")</span>
+          <span class="text-sm text-gray-500">@string.Join(", ", entry.Participants)</span>
+        </p>
+      }
+    </div>
+  }
+</div>
