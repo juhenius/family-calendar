@@ -31,6 +31,7 @@ public class EditableEntryRowModel(IEntryRepository entryRepository) : PageModel
     public required DateTimeOffset Date { get; init; }
     public string? Location { get; init; }
     public string? Participants { get; init; }
+    public string? Recurrence { get; init; }
   }
 
   public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
@@ -48,6 +49,7 @@ public class EditableEntryRowModel(IEntryRepository entryRepository) : PageModel
       Date = Entry.Date,
       Location = Entry.Location,
       Participants = string.Join(", ", Entry.Participants),
+      Recurrence = string.Join("\n", Entry.Recurrence),
     };
 
     return Page();
@@ -71,7 +73,8 @@ public class EditableEntryRowModel(IEntryRepository entryRepository) : PageModel
       title: Input.Title,
       date: Input.Date,
       location: Input.Location,
-      participants: ParseParticipants(Input.Participants)
+      participants: ParseParticipants(Input.Participants),
+      recurrence: ParseRecurrence(Input.Recurrence)
     );
 
     await _entryRepository.UpdateAsync(updatedEntry, cancellationToken);
@@ -81,8 +84,21 @@ public class EditableEntryRowModel(IEntryRepository entryRepository) : PageModel
 
   private static List<string> ParseParticipants(string? input)
   {
+    return Split([","], input);
+  }
+
+  private static List<string> ParseRecurrence(string? input)
+  {
+    return Split(["\r\n", "\n", "\r"], input);
+  }
+
+  private static List<string> Split(string[] delimeter, string? input)
+  {
     return input is null
       ? []
-      : input.Split(",").Select(v => v.Trim()).ToList();
+      : input.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
+          .Select(line => line.Trim())
+          .Where(line => !string.IsNullOrWhiteSpace(line))
+          .ToList();
   }
 }

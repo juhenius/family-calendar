@@ -50,6 +50,16 @@
         <input asp-for="Input.Participants" class="block w-full mt-1 form-input">
         <span asp-validation-for="Input.Participants" class="text-red-400"></span>
       </div>
+      <div>
+        <label asp-for="Input.Recurrence" class="block form-label">Recurrence</label>
+        <div
+          class="grid text-sm after:px-3 after:py-1.5 [&>textarea]:text-inherit after:text-inherit [&>textarea]:resize-none [&>textarea]:overflow-hidden [&>textarea]:[grid-area:1/1/2/2] after:[grid-area:1/1/2/2] after:whitespace-pre-wrap after:invisible after:content-[attr(data-cloned-val)_'_'] after:border"
+          data-cloned-val="@Model.Input.Recurrence">
+          <textarea asp-for="Input.Recurrence" class="w-full form-input"
+            oninput="this.parentNode.dataset.clonedVal = this.value" rows="1"></textarea>
+        </div>
+        <span asp-validation-for="Input.Recurrence" class="text-red-400"></span>
+      </div>
       <div class="flex flex-row justify-end">
         <button type="submit" class="btn btn-blue w-24 flex flex-col items-center">
           <span class="hide-on-loading">Save</span>

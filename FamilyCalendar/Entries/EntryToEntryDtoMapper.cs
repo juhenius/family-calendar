@@ -19,6 +19,7 @@ public static class EntryToEntryDtoMapper
       Date = source.Date.ToUniversalTime(),
       Location = source.Location,
       Participants = source.Participants,
+      Recurrence = source.Recurrence,
       Prompt = source.Prompt,
       CreatedAt = source.CreatedAt.ToUniversalTime(),
     };

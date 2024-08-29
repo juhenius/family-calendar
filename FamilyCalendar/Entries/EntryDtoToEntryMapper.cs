@@ -12,6 +12,7 @@ public static class EntryDtoToEntryMapper
       Date = source.Date,
       Location = source.Location,
       Participants = source.Participants,
+      Recurrence = source.Recurrence ?? [],
       Prompt = source.Prompt,
       CreatedAt = source.CreatedAt,
     };

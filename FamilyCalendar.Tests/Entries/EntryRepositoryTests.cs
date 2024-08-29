@@ -64,6 +64,7 @@ public partial class EntryRepositoryTests
       Title = "New Entry",
       Date = DateTimeOffset.UtcNow,
       Participants = ["Tester"],
+      Recurrence = ["test rule"],
       Prompt = "Doctor Appointment now at Doctors office",
       CreatedAt = DateTimeOffset.UtcNow,
     };

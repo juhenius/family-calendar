@@ -31,6 +31,7 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
       Date = ParseDate(entry.Date),
       Location = entry.Location,
       Participants = entry.Participants ?? [],
+      Recurrence = entry.Recurrence ?? [],
       Prompt = input,
       CreatedAt = now,
     };
@@ -49,12 +50,13 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
         ""properties"": {{
           ""title"": {{
             ""type"": ""string"",
-            ""description"": ""Title and description of the event""
+            ""description"": ""Title and description of the event, without recurrence related info.""
           }},
           ""date"": {{
             ""type"": ""string"",
             ""format"": ""date-time"",
-            ""description"": ""Date and time of the event in UTC using format 'yyyy-MM-ddTHH:mm:ssZ'""
+            ""description"": ""Date and time of the event in UTC using format 'yyyy-MM-ddTHH:mm:ssZ'"",
+            ""example"": ""2024-06-10T20:55:23Z""
           }},
           ""location"": {{
             ""type"": [""string"", ""null""],
@@ -62,9 +64,19 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
           }},
           ""participants"": {{
             ""type"": ""array"",
-            ""description"": ""Names of the persons participating in the event"",
+            ""description"": ""Names of the persons participating in the event. Empty array for events without participants."",
             ""items"": {{
-              ""type"": ""string""
+              ""type"": ""string"",
+              ""example"": ""Seppo""
+            }}
+          }},
+          ""recurrence"": {{
+            ""type"": ""array"",
+            ""description"": ""List of recurrence rule patterns in RFC 5545 format. Empty array for non recurring events."",
+            ""items"": {{
+              ""type"": ""string"",
+              ""description"": ""Rule pattern in RFC 5545 format"",
+              ""example"": ""FREQ=DAILY;UNTIL=20240831T115959""
             }}
           }}
         }}
@@ -135,4 +147,7 @@ internal sealed class EntryJson
 
   [JsonPropertyName("participants")]
   public List<string> Participants { get; set; } = default!;
+
+  [JsonPropertyName("recurrence")]
+  public List<string> Recurrence { get; set; } = default!;
 }

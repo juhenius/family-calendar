@@ -8,6 +8,7 @@ public class Entry
   public required DateTimeOffset Date { get; init; }
   public string? Location { get; init; }
   public required List<string> Participants { get; init; }
+  public required List<string> Recurrence { get; init; }
   public required string Prompt { get; init; }
   public required DateTimeOffset CreatedAt { get; init; }
 
@@ -34,6 +35,7 @@ public class Entry
     DateTimeOffset? date = null,
     string? location = null,
     List<string>? participants = null,
+    List<string>? recurrence = null,
     string? prompt = null,
     DateTimeOffset? createdAt = null)
   {
@@ -45,6 +47,7 @@ public class Entry
       Date = date ?? Date,
       Location = location ?? Location,
       Participants = participants ?? Participants,
+      Recurrence = recurrence ?? Recurrence,
       Prompt = prompt ?? Prompt,
       CreatedAt = createdAt ?? CreatedAt
     };

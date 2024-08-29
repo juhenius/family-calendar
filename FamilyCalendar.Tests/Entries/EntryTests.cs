@@ -113,6 +113,25 @@ public class EntryTests
   }
 
   [Fact]
+  public void With_ShouldReplaceRecurrence()
+  {
+    var originalEntry = CreateEntry();
+
+    List<string> expectedRecurrence = ["test1", "test2"];
+    var newEntry = originalEntry.With(recurrence: expectedRecurrence);
+
+    Assert.Equal(originalEntry.Id, newEntry.Id);
+    Assert.Equal(originalEntry.CalendarId, newEntry.CalendarId);
+    Assert.Equal(originalEntry.Title, newEntry.Title);
+    Assert.Equal(originalEntry.Date, newEntry.Date);
+    Assert.Equal(originalEntry.Location, newEntry.Location);
+    Assert.Equal(originalEntry.Participants, newEntry.Participants);
+    Assert.Equal(expectedRecurrence, newEntry.Recurrence);
+    Assert.Equal(originalEntry.Prompt, newEntry.Prompt);
+    Assert.Equal(originalEntry.CreatedAt, newEntry.CreatedAt);
+  }
+
+  [Fact]
   public void With_ShouldReplacePrompt()
   {
     var originalEntry = CreateEntry();
@@ -158,6 +177,7 @@ public class EntryTests
       Date = new DateTimeOffset(2023, 6, 10, 13, 45, 0, TimeSpan.Zero),
       Location = "Doctors office",
       Participants = ["Tester"],
+      Recurrence = ["test rule"],
       Prompt = "Doctor Appointment now at Doctors office",
       CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
     };

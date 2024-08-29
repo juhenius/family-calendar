@@ -212,6 +212,33 @@ public class OpenAiEntryParserTests
   }
 
   [Fact]
+  public async Task ParseFromString_ParsesRecurrenceFromResponse()
+  {
+    List<string> recurrence = ["expected recurrence 1", "expected recurrence 1"];
+    SetReply(new ReplyBuilder().WithRecurrence(recurrence).Build());
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+
+    Assert.Equal(recurrence, entry.Recurrence);
+  }
+
+  [Fact]
+  public async Task ParseFromString_ReturnsEmptyRecurrenceNonRecurringEntry()
+  {
+    SetReply(new ReplyBuilder().WithRecurrence(null).Build());
+
+    var input = "not relevant";
+    var calendarId = Guid.NewGuid();
+    var entryId = Guid.NewGuid();
+    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+
+    Assert.Empty(entry.Recurrence);
+  }
+
+  [Fact]
   public async Task ParseFromString_AddsPromptToEntry()
   {
     SetDefaultReply();
@@ -278,6 +305,7 @@ public class OpenAiEntryParserTests
     private string? date = "2024-06-10T20:55:23Z";
     private string? location = "location";
     private List<string>? participants = ["expected participant"];
+    private List<string>? recurrence = ["expected recurrence"];
 
 
     public ReplyBuilder WithTitle(string? value)
@@ -304,6 +332,12 @@ public class OpenAiEntryParserTests
       return this;
     }
 
+    public ReplyBuilder WithRecurrence(List<string>? value)
+    {
+      recurrence = value;
+      return this;
+    }
+
     public string Build()
     {
       List<string> fields = [];
@@ -327,6 +361,12 @@ public class OpenAiEntryParserTests
       {
         var values = participants.Count == 0 ? "" : $"\"{string.Join("\",\"", participants)}\"";
         fields.Add($"\"participants\": [{values}]");
+      }
+
+      if (recurrence is not null)
+      {
+        var values = recurrence.Count == 0 ? "" : $"\"{string.Join("\",\"", recurrence)}\"";
+        fields.Add($"\"recurrence\": [{values}]");
       }
 
       return $"{{ {string.Join(", ", fields)} }}";
