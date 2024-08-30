@@ -7,14 +7,14 @@ namespace FamilyCalendar.Entries.Tests;
 public partial class EntryRepositoryTests
 {
   private readonly IAmazonDynamoDB _dynamoDb = Substitute.For<IAmazonDynamoDB>();
-  private readonly IOptions<FamilyCalendarSettings> _settings = Substitute.For<IOptions<FamilyCalendarSettings>>();
+  private readonly IOptions<FamilyCalendarSettings> _settings;
   private readonly EntryRepository _repository;
   private readonly string _testTableName = "TestTable";
   private readonly string _testEntriesByDateIndex = "TestEntriesByDateIndex";
 
   public EntryRepositoryTests()
   {
-    _settings.Value.Returns(new FamilyCalendarSettings
+    _settings = Options.Create(new FamilyCalendarSettings()
     {
       DynamoDbTable = _testTableName,
       EntriesByDateIndex = _testEntriesByDateIndex,
@@ -24,6 +24,7 @@ public partial class EntryRepositoryTests
       ViewerPassword = "",
       AdministratorPassword = "",
     });
+
     _repository = new EntryRepository(_dynamoDb, _settings);
   }
 

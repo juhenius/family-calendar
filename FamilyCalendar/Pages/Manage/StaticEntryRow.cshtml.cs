@@ -41,11 +41,6 @@ public class StaticEntryRowModel(IEntryRepository entryRepository, IEntryParser 
 
     var now = entry.CreatedAt.ToOffset(DateTimeOffset.Now.Offset);
     var reparsedEntry = await _entryParser.ParseFromString(entry.Prompt, CalendarId, entry.Id, now, cancellationToken);
-    if (reparsedEntry is null)
-    {
-      return BadRequest();
-    }
-
     await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
     Entry = reparsedEntry;
 
