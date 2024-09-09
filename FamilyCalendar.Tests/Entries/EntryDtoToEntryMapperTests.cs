@@ -15,7 +15,7 @@ public class EntryDtoToEntryMapperTests
       Date = new DateTimeOffset(2023, 5, 20, 14, 5, 0, TimeSpan.Zero),
       Location = "Doctors office",
       Participants = ["Tester"],
-      Recurrence = ["test rule"],
+      Recurrence = [],
       Prompt = "Doctor Appointment now at Doctors office",
       CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
     };

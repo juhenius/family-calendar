@@ -1,5 +1,3 @@
-using FamilyCalendar.Entries;
-
 namespace FamilyCalendar.Tests.Entries;
 
 public class EntryTests
@@ -7,7 +5,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceId()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedId = Guid.NewGuid();
     var newEntry = originalEntry.With(id: expectedId);
@@ -25,7 +23,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceCalendarId()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedCalendarId = Guid.NewGuid();
     var newEntry = originalEntry.With(calendarId: expectedCalendarId);
@@ -43,7 +41,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceTitle()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedTitle = "new title";
     var newEntry = originalEntry.With(title: expectedTitle);
@@ -61,7 +59,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceDate()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedDate = new DateTimeOffset(2024, 5, 20, 5, 30, 0, TimeSpan.Zero);
     var newEntry = originalEntry.With(date: expectedDate);
@@ -79,7 +77,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceLocation()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedLocation = "new location";
     var newEntry = originalEntry.With(location: expectedLocation);
@@ -97,7 +95,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceParticipants()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     List<string> expectedParticipants = ["test1", "test2"];
     var newEntry = originalEntry.With(participants: expectedParticipants);
@@ -115,7 +113,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceRecurrence()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     List<string> expectedRecurrence = ["test1", "test2"];
     var newEntry = originalEntry.With(recurrence: expectedRecurrence);
@@ -134,7 +132,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplacePrompt()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedPrompt = "new prompt";
     var newEntry = originalEntry.With(prompt: expectedPrompt);
@@ -152,7 +150,7 @@ public class EntryTests
   [Fact]
   public void With_ShouldReplaceCreatedAt()
   {
-    var originalEntry = CreateEntry();
+    var originalEntry = EntryTestUtils.CreateTestEntry();
 
     var expectedCreatedAt = new DateTimeOffset(2024, 5, 20, 5, 30, 0, TimeSpan.Zero);
     var newEntry = originalEntry.With(createdAt: expectedCreatedAt);
@@ -165,21 +163,5 @@ public class EntryTests
     Assert.Equal(originalEntry.Participants, newEntry.Participants);
     Assert.Equal(originalEntry.Prompt, newEntry.Prompt);
     Assert.Equal(expectedCreatedAt, newEntry.CreatedAt);
-  }
-
-  private static Entry CreateEntry()
-  {
-    return new Entry
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = Guid.NewGuid(),
-      Title = "Doctor Appointment",
-      Date = new DateTimeOffset(2023, 6, 10, 13, 45, 0, TimeSpan.Zero),
-      Location = "Doctors office",
-      Participants = ["Tester"],
-      Recurrence = ["test rule"],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
-    };
   }
 }

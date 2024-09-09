@@ -123,7 +123,7 @@ public class IndexModelTests
       Title = "New Entry",
       Date = DateTimeOffset.UtcNow,
       Participants = ["Tester"],
-      Recurrence = ["test rule"],
+      Recurrence = [],
       Prompt = "Doctor Appointment now at Doctors office",
       CreatedAt = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
     };

@@ -23,7 +23,7 @@ public class LoginModelTests
     var settings = Options.Create(new FamilyCalendarSettings()
     {
       DynamoDbTable = "",
-      EntriesByDateIndex = "",
+      EntriesByDisplayEndDateIndex = "",
       BaseHref = "",
       OpenAiApiKey = "",
       OpenAiModelId = "",

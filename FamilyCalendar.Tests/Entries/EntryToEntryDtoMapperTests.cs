@@ -7,18 +7,7 @@ public class EntryToEntryDtoMapperTests
   [Fact]
   public void ToEntryDto_ShouldCorrectlyMapEntryDtoToEntry()
   {
-    var entry = new Entry
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = Guid.NewGuid(),
-      Title = "Doctor Appointment",
-      Date = DateTimeOffset.UtcNow,
-      Location = "Doctors office",
-      Participants = ["Tester"],
-      Recurrence = ["test rule"],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
-    };
+    var entry = EntryTestUtils.CreateTestEntry();
 
     var entryDto = entry.ToEntryDto();
 
@@ -39,21 +28,34 @@ public class EntryToEntryDtoMapperTests
   [Fact]
   public void ToEntryDto_MapsDatesToUtc()
   {
-    var entry = new Entry
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = Guid.NewGuid(),
-      Title = "Doctor Appointment",
-      Date = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
-      Participants = ["Tester"],
-      Recurrence = ["test rule"],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.FromHours(8)),
-    };
+    var entry = EntryTestUtils.CreateTestEntry().With(
+      date: new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
+      createdAt: new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.FromHours(8))
+    );
 
     var entryDto = entry.ToEntryDto();
 
     Assert.Equal(TimeSpan.Zero, entryDto.Date.Offset);
     Assert.Equal(TimeSpan.Zero, entryDto.CreatedAt.Offset);
+  }
+
+  [Fact]
+  public void ToEntryDto_ResolvesDisplayStartDate()
+  {
+    var entry = EntryTestUtils.CreateTestEntry();
+
+    var entryDto = entry.ToEntryDto();
+
+    Assert.Equal(entry.ResolveDisplayStartDate(), entryDto.DisplayStartDate);
+  }
+
+  [Fact]
+  public void ToEntryDto_ResolvesDisplayEndDate()
+  {
+    var entry = EntryTestUtils.CreateTestEntry();
+
+    var entryDto = entry.ToEntryDto();
+
+    Assert.Equal(entry.ResolveDisplayEndDate(), entryDto.DisplayEndDate);
   }
 }

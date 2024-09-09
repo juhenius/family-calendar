@@ -25,7 +25,7 @@ Resources:
           AttributeType: S
         - AttributeName: sk
           AttributeType: S
-        - AttributeName: date
+        - AttributeName: displayEndDate
           AttributeType: S
       KeySchema:
         - AttributeName: pk
@@ -37,11 +37,11 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       GlobalSecondaryIndexes:
-        - IndexName: 'EntriesByDate'
+        - IndexName: 'EntriesByDisplayEndDate'
           KeySchema:
             - AttributeName: 'pk'
               KeyType: 'HASH'
-            - AttributeName: 'date'
+            - AttributeName: 'displayEndDate'
               KeyType: 'RANGE'
           Projection:
             ProjectionType: 'ALL'
@@ -74,7 +74,7 @@ Resources:
           FamilyCalendar__BaseHref: /Prod/
           FamilyCalendar__DynamoDbTable:
             Ref: DynamoDBTable
-          FamilyCalendar__EntriesByDateIndex: EntriesByDate
+          FamilyCalendar__EntriesByDisplayEndDateIndex: EntriesByDisplayEndDate
           FamilyCalendar__OpenAiApiKey:
             Ref: OpenAiApiKey
           FamilyCalendar__OpenAiModelId:
@@ -114,7 +114,7 @@ Resources:
                   - "dynamodb:Query"
                 Resource:
                   - !GetAtt DynamoDBTable.Arn
-                  - !Sub "${DynamoDBTable.Arn}/index/EntriesByDate"
+                  - !Sub "${DynamoDBTable.Arn}/index/EntriesByDisplayEndDate"
 Outputs:
   ApiURL:
     Description: "API endpoint URL for Prod environment"

@@ -1,5 +1,6 @@
 using System.Net;
 using Amazon.DynamoDBv2.Model;
+using FamilyCalendar.Tests.Entries;
 using NSubstitute;
 
 namespace FamilyCalendar.Entries.Tests;
@@ -9,7 +10,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_UsesGivenTable()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -23,7 +24,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_SetsCalendarIdAsPartitionKey()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -37,7 +38,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_SetsEntryIdWithPrefixAsSortingKey()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -51,7 +52,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_SetsUpdatedAt()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var now = DateTimeOffset.UtcNow;
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
@@ -67,7 +68,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_SetsEntryAttributes()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -85,7 +86,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_ReturnsWhenEntryIsCreated()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.OK };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 
@@ -97,7 +98,7 @@ public partial class EntryRepositoryTests
   [Fact]
   public async Task CreateAsync_ThrowsWhenCreateFails()
   {
-    var entry = CreateTestEntry();
+    var entry = EntryTestUtils.CreateTestEntry();
     var putItemResponse = new PutItemResponse { HttpStatusCode = HttpStatusCode.InternalServerError };
     _dynamoDb.PutItemAsync(Arg.Any<PutItemRequest>(), Arg.Any<CancellationToken>()).Returns(putItemResponse);
 

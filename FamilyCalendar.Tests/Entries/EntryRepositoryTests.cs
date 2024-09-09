@@ -10,14 +10,14 @@ public partial class EntryRepositoryTests
   private readonly IOptions<FamilyCalendarSettings> _settings;
   private readonly EntryRepository _repository;
   private readonly string _testTableName = "TestTable";
-  private readonly string _testEntriesByDateIndex = "TestEntriesByDateIndex";
+  private readonly string _testEntriesByDisplayEndDateIndex = "TestEntriesByDisplayEndDateIndex";
 
   public EntryRepositoryTests()
   {
     _settings = Options.Create(new FamilyCalendarSettings()
     {
       DynamoDbTable = _testTableName,
-      EntriesByDateIndex = _testEntriesByDateIndex,
+      EntriesByDisplayEndDateIndex = _testEntriesByDisplayEndDateIndex,
       BaseHref = "",
       OpenAiApiKey = "",
       OpenAiModelId = "",
@@ -54,20 +54,5 @@ public partial class EntryRepositoryTests
 
     result = DateTimeOffset.UtcNow;
     return false;
-  }
-
-  private static Entry CreateTestEntry()
-  {
-    return new Entry
-    {
-      Id = Guid.NewGuid(),
-      CalendarId = Guid.NewGuid(),
-      Title = "New Entry",
-      Date = DateTimeOffset.UtcNow,
-      Participants = ["Tester"],
-      Recurrence = ["test rule"],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = DateTimeOffset.UtcNow,
-    };
   }
 }

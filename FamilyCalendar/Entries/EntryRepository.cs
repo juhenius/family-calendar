@@ -11,7 +11,7 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
 {
   private readonly IAmazonDynamoDB _dynamoDb = dynamoDb;
   private readonly string _tableName = settings.Value.DynamoDbTable;
-  private readonly string _entriesByDateIndex = settings.Value.EntriesByDateIndex;
+  private readonly string _entriesByDisplayEndDateIndex = settings.Value.EntriesByDisplayEndDateIndex;
 
   public async Task<Entry?> GetAsync(Guid calendarId, Guid entryId, CancellationToken cancellationToken)
   {
@@ -49,10 +49,12 @@ public class EntryRepository(IAmazonDynamoDB dynamoDb, IOptions<FamilyCalendarSe
     var request = new QueryRequest
     {
       TableName = _tableName,
-      IndexName = _entriesByDateIndex,
-      KeyConditionExpression = "pk = :pk and #date between :rangeStart and :rangeEnd",
+      IndexName = _entriesByDisplayEndDateIndex,
+      KeyConditionExpression = "pk = :pk and #displayEndDate >= :rangeStart",
+      FilterExpression = "#displayStartDate <= :rangeEnd",
       ExpressionAttributeNames = new() {
-        { "#date", "date" }
+        { "#displayStartDate", "displayStartDate" },
+        { "#displayEndDate", "displayEndDate" }
       },
       ExpressionAttributeValues = new() {
         { ":pk", new AttributeValue { S = calendarId.ToString() } },

@@ -43,4 +43,10 @@ public class EntryDto
 
   [JsonPropertyName("updatedAt")]
   public DateTimeOffset UpdatedAt { get; set; }
+
+  [JsonPropertyName("displayEndDate")]
+  public DateTimeOffset DisplayEndDate { get; set; }
+
+  [JsonPropertyName("displayStartDate")]
+  public DateTimeOffset DisplayStartDate { get; set; }
 }
