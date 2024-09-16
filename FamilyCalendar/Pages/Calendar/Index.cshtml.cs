@@ -23,7 +23,7 @@ public class IndexModel(IEntryRepository entryRepository) : PageModel
     var entryDtos = await _entryRepository.GetByDateRangeAsync(
       CalendarId,
       DateTimeOffset.UtcNow.Date,
-      DateTimeOffset.UtcNow.Date.Add(TimeSpan.FromDays(1))
+      DateTimeOffset.UtcNow.Date.Add(TimeSpan.FromDays(14))
     );
 
     return entryDtos.OrderBy(e => e.Date.ToString("s"));
