@@ -41,7 +41,7 @@ dotnet tool install -g Amazon.Lambda.Tools
 
 ## Run locally
 
-To run locally while still utilizing AWS services such as DynamoDB
+To run locally while still utilizing AWS services such as DynamoDB. Setup `FamilyCalendar/.env` from `FamilyCalendar/.env.example` and execute:
 
 ```bash
 dotnet run
