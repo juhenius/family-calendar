@@ -20,13 +20,11 @@ public class IndexModel(IEntryRepository entryRepository) : PageModel
 
   public async Task<IEnumerable<Entry>> GetEntriesAsync()
   {
-    var entryDtos = await _entryRepository.GetByDateRangeAsync(
-      CalendarId,
-      DateTimeOffset.UtcNow.Date,
-      DateTimeOffset.UtcNow.Date.Add(TimeSpan.FromDays(14))
-    );
-
-    return entryDtos.OrderBy(e => e.Date.ToString("s"));
+    var rangeStart = DateTimeOffset.UtcNow.Date;
+    var rangeEnd = DateTimeOffset.UtcNow.Date.Add(TimeSpan.FromDays(14));
+    var entries = await _entryRepository.GetByDateRangeAsync(CalendarId, rangeStart, rangeEnd);
+    return entries.SelectMany(e => e.ExpandRecurrenceForDateRange(rangeStart, rangeEnd))
+      .OrderBy(e => e.Date.ToString("s"));
   }
 }
 
