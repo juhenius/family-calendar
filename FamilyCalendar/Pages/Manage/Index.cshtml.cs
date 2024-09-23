@@ -3,6 +3,7 @@ using FamilyCalendar.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel.DataAnnotations;
 
 namespace FamilyCalendar.Pages.Manage;
 
@@ -18,18 +19,28 @@ public class IndexModel(IEntryRepository entryRepository, IEntryParser entryPars
   public required Guid CalendarId { get; set; }
 
   [BindProperty]
-  public string? EntryInput { get; set; } = default;
+  public required AddEntryInputModel Input { get; set; }
+
+  public class AddEntryInputModel
+  {
+    [Required]
+    public required string Prompt { get; init; }
+    [Required]
+    public DateTimeOffset CurrentTime { get; set; }
+    [Required]
+    public required string TimeZone { get; init; }
+  }
 
   public async Task<IActionResult> OnPostAddEntryAsync(CancellationToken cancellationToken)
   {
-    if (string.IsNullOrEmpty(EntryInput))
+    if (!ModelState.IsValid)
     {
       return BadRequest();
     }
 
     var entryId = Guid.NewGuid();
-    var now = DateTimeOffset.Now;
-    var entry = await _entryParser.ParseFromString(EntryInput, CalendarId, entryId, now, cancellationToken);
+    var parseResult = await _entryParser.ParseFromString(Input.Prompt, Input.CurrentTime, Input.TimeZone, cancellationToken);
+    var entry = parseResult.ToEntry(entryId, CalendarId);
     await _entryRepository.CreateAsync(entry, cancellationToken);
     _newEntries.Add(entry);
 

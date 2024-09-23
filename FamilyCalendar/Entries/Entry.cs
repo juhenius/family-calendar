@@ -11,6 +11,7 @@ public class Entry
   public required List<string> Recurrence { get; init; }
   public required string Prompt { get; init; }
   public required DateTimeOffset CreatedAt { get; init; }
+  public required string TimeZone { get; init; }
 
   public override bool Equals(object? obj)
   {
@@ -37,7 +38,8 @@ public class Entry
     List<string>? participants = null,
     List<string>? recurrence = null,
     string? prompt = null,
-    DateTimeOffset? createdAt = null)
+    DateTimeOffset? createdAt = null,
+    string? timeZone = null)
   {
     return new Entry
     {
@@ -49,7 +51,8 @@ public class Entry
       Participants = participants ?? Participants,
       Recurrence = recurrence ?? Recurrence,
       Prompt = prompt ?? Prompt,
-      CreatedAt = createdAt ?? CreatedAt
+      CreatedAt = createdAt ?? CreatedAt,
+      TimeZone = timeZone ?? TimeZone
     };
   }
 }

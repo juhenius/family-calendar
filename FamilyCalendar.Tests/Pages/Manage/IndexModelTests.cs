@@ -1,6 +1,7 @@
 using FamilyCalendar.Common;
 using FamilyCalendar.Entries;
 using FamilyCalendar.Pages.Manage;
+using FamilyCalendar.Tests.Entries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -30,7 +31,7 @@ public class IndexModelTests
     _pageModel = new IndexModel(_entryRepository, _entryParser, _partialViewRenderer)
     {
       CalendarId = _calendarId,
-      EntryInput = "not relevant",
+      Input = null!,
       PageContext = new PageContext
       {
         ViewData = viewData
@@ -40,9 +41,9 @@ public class IndexModelTests
   }
 
   [Fact]
-  public async Task OnPostAddEntryAsync_ReturnsBadRequestForMissingInput()
+  public async Task OnPostAddEntryAsync_ReturnsBadRequestForInvalidInput()
   {
-    _pageModel.EntryInput = null;
+    _pageModel.ModelState.AddModelError("Input.Prompt", "The Prompt field is required.");
 
     var result = await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
 
@@ -50,52 +51,68 @@ public class IndexModelTests
   }
 
   [Fact]
-  public async Task OnPostAddEntryAsync_ReturnsBadRequestForEmptyInput()
+  public async Task OnPostAddEntryAsync_ParsesEntryFromPrompt()
   {
-    _pageModel.EntryInput = "";
-
-    var result = await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
-
-    Assert.IsType<BadRequestResult>(result);
-  }
-
-  [Fact]
-  public async Task OnPostAddEntryAsync_ParsesEntryFromInput()
-  {
-    var expectedInput = "expected input";
-    _pageModel.EntryInput = expectedInput;
+    var expectedPrompt = "expected input";
+    _pageModel.Input = CreateInput(prompt: expectedPrompt);
+    ReturnValidResultFromParser();
 
     await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
 
     await _entryParser.Received(1).ParseFromString(
-      expectedInput, _calendarId, Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+      expectedPrompt, Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task OnPostAddEntryAsync_UsesCurrentTimeForRelativeDates()
+  public async Task OnPostAddEntryAsync_UsesGivenCurrentTimeForRelativeDates()
   {
-    var now = DateTimeOffset.Now;
+    var expectedCurrentTime = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
+    _pageModel.Input = CreateInput(currentTime: expectedCurrentTime);
+    ReturnValidResultFromParser();
 
     await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
 
-    await _entryParser.Received(1).ParseFromString(
-      Arg.Any<string>(), _calendarId, Arg.Any<Guid>(),
-      Arg.Is<DateTimeOffset>(v => IsCloseTo(v, now, TimeSpan.FromSeconds(1))),
+    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), expectedCurrentTime, Arg.Any<string>(),
       Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task OnPostAddEntryAsync_CreatesNewEntry()
+  public async Task OnPostAddEntryAsync_UsesGivenTimeZone()
   {
-    var entry = CreateTestEntry();
-    _entryParser.ParseFromString(
-      Arg.Any<string>(), _calendarId, Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-      .Returns(Task.FromResult(entry));
+    var expectedTimezone = "expected timezone";
+    _pageModel.Input = CreateInput(timeZone: expectedTimezone);
+    ReturnValidResultFromParser();
+
+    await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
+
+    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), expectedTimezone,
+      Arg.Any<CancellationToken>());
+  }
+
+  [Fact]
+  public async Task OnPostAddEntryAsync_PersistsNewEntry()
+  {
+    _pageModel.Input = CreateInput();
+    var parseResult = EntryTestUtils.CreateTestParseResult();
+    ReturnValidResultFromParser(parseResult);
 
     await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
 
     await _entryRepository.Received(1).CreateAsync(
-      entry,
+      Arg.Is<Entry>(e => e.Title == parseResult.Title),
+      Arg.Any<CancellationToken>());
+  }
+
+  [Fact]
+  public async Task OnPostAddEntryAsync_UsesGivenCalendar()
+  {
+    _pageModel.Input = CreateInput();
+    ReturnValidResultFromParser();
+
+    await _pageModel.OnPostAddEntryAsync(CancellationToken.None);
+
+    await _entryRepository.Received(1).CreateAsync(
+      Arg.Is<Entry>(e => e.CalendarId == _calendarId),
       Arg.Any<CancellationToken>());
   }
 
@@ -109,23 +126,23 @@ public class IndexModelTests
     await _entryRepository.Received(1).DeleteAsync(_calendarId, entryId, Arg.Any<CancellationToken>());
   }
 
-  private static bool IsCloseTo(DateTimeOffset a, DateTimeOffset b, TimeSpan offset)
+  private void ReturnValidResultFromParser(EntryParseResult? result = null)
   {
-    return (b - a) < offset;
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+      .Returns(Task.FromResult(result ?? EntryTestUtils.CreateTestParseResult()));
   }
 
-  private Entry CreateTestEntry()
+  private static IndexModel.AddEntryInputModel CreateInput(
+    string? prompt = null,
+    DateTimeOffset? currentTime = null,
+    string? timeZone = null
+    )
   {
-    return new Entry
+    return new IndexModel.AddEntryInputModel()
     {
-      Id = Guid.NewGuid(),
-      CalendarId = _calendarId,
-      Title = "New Entry",
-      Date = DateTimeOffset.UtcNow,
-      Participants = ["Tester"],
-      Recurrence = [],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
+      Prompt = prompt ?? "not relevant",
+      CurrentTime = currentTime ?? DateTimeOffset.Now,
+      TimeZone = timeZone ?? "Europe/Helsinki",
     };
   }
 }

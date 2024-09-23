@@ -15,6 +15,7 @@ public static class EntryDtoToEntryMapper
       Recurrence = source.Recurrence ?? [],
       Prompt = source.Prompt,
       CreatedAt = source.CreatedAt,
+      TimeZone = source.TimeZone,
     };
   }
 }

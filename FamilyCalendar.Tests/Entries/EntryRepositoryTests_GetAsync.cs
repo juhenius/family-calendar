@@ -76,6 +76,7 @@ public partial class EntryRepositoryTests
         { "title", new AttributeValue { S = "Entry" } },
         { "prompt", new AttributeValue { S = "Prompt" } },
         { "createdAt", new AttributeValue { S = "2024-07-13T20:55:23Z" } },
+        { "timeZone", new AttributeValue { S = "Europe/Amsterdam" } },
       }
     };
     _dynamoDb.GetItemAsync(Arg.Any<GetItemRequest>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(getItemResponse));

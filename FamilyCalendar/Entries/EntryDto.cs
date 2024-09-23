@@ -41,6 +41,9 @@ public class EntryDto
   [JsonPropertyName("createdAt")]
   public required DateTimeOffset CreatedAt { get; init; }
 
+  [JsonPropertyName("timeZone")]
+  public required string TimeZone { get; init; }
+
   [JsonPropertyName("updatedAt")]
   public DateTimeOffset UpdatedAt { get; set; }
 

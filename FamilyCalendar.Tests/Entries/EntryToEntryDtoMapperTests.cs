@@ -23,6 +23,7 @@ public class EntryToEntryDtoMapperTests
     Assert.Equal(entry.Recurrence, entryDto.Recurrence);
     Assert.Equal(entry.Prompt, entryDto.Prompt);
     Assert.Equal(entry.CreatedAt, entryDto.CreatedAt);
+    Assert.Equal(entry.TimeZone, entryDto.TimeZone);
   }
 
   [Fact]

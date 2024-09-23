@@ -18,12 +18,10 @@ public class OpenAiEntryParserTests
   [Fact]
   public async Task ParseFromString_SendsInputToAi()
   {
+    var input = "expected input";
     SetDefaultReply();
 
-    var input = "expected input";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    await ExecuteParseFromStringWithDefaults(input: input);
 
     await _chatCompletionService.Received().GetChatMessageContentsAsync(
       Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, input)),
@@ -34,18 +32,33 @@ public class OpenAiEntryParserTests
   }
 
   [Fact]
-  public async Task ParseFromString_UsesGivenCurrentTime()
+  public async Task ParseFromString_UsesGivenTimeZone()
   {
+    var timeZone = "Europe/Amsterdam";
     SetDefaultReply();
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var now = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
-    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, now, CancellationToken.None);
+    await ExecuteParseFromStringWithDefaults(timeZone: timeZone);
 
     await _chatCompletionService.Received().GetChatMessageContentsAsync(
-      Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, now.ToUniversalTime().ToString("s")) && ChatHistoryContains(chat, now.Offset.ToString())),
+      Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, timeZone)),
+      Arg.Any<PromptExecutionSettings>(),
+      Arg.Any<Kernel?>(),
+      Arg.Any<CancellationToken>()
+    );
+  }
+
+  [Fact]
+  public async Task ParseFromString_UsesGivenLocalTime()
+  {
+    var localTime = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
+    SetDefaultReply();
+
+    await ExecuteParseFromStringWithDefaults(localTime: localTime);
+
+    await _chatCompletionService.Received().GetChatMessageContentsAsync(
+      Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, localTime.ToUniversalTime().ToString("s"))
+        && ChatHistoryContains(chat, localTime.ToString("s"))
+        && ChatHistoryContains(chat, localTime.Offset.ToString())),
       Arg.Any<PromptExecutionSettings>(),
       Arg.Any<Kernel?>(),
       Arg.Any<CancellationToken>()
@@ -58,10 +71,7 @@ public class OpenAiEntryParserTests
     var reply = new ReplyBuilder().WithTitle("title").WithDate("2024-07-12T20:00:00Z").Build();
     SetReply(reply);
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    await ExecuteParseFromStringWithDefaults();
 
     await _chatCompletionService.Received().GetChatMessageContentsAsync(
       Arg.Is<ChatHistory>(chat => ChatHistoryContains(chat, reply)),
@@ -72,43 +82,14 @@ public class OpenAiEntryParserTests
   }
 
   [Fact]
-  public async Task ParseFromString_SetsGivenEntryId()
-  {
-    SetDefaultReply();
-
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
-
-    Assert.Equal(entryId, entry.Id);
-  }
-
-  [Fact]
-  public async Task ParseFromString_SetsGivenCalenarId()
-  {
-    SetDefaultReply();
-
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
-
-    Assert.Equal(calendarId, entry.CalendarId);
-  }
-
-  [Fact]
   public async Task ParseFromString_ParsesTitleFromResponse()
   {
     var title = "expected title";
     SetReply(new ReplyBuilder().WithTitle(title).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Equal(title, entry.Title);
+    Assert.Equal(title, result.Title);
   }
 
   [Fact]
@@ -116,10 +97,7 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithTitle(null).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
+    await Assert.ThrowsAnyAsync<Exception>(() => ExecuteParseFromStringWithDefaults());
   }
 
   [Fact]
@@ -127,12 +105,9 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithDate("2024-06-10T20:00:00Z").Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Equal(new DateTimeOffset(2024, 6, 10, 20, 0, 0, TimeSpan.Zero), entry.Date);
+    Assert.Equal(new DateTimeOffset(2024, 6, 10, 20, 0, 0, TimeSpan.Zero), result.Date);
   }
 
   [Fact]
@@ -140,10 +115,7 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithDate(null).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
+    await Assert.ThrowsAnyAsync<Exception>(() => ExecuteParseFromStringWithDefaults());
   }
 
   [Fact]
@@ -151,10 +123,7 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithDate("2024-06-10T20:00:00").Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    await Assert.ThrowsAnyAsync<Exception>(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
+    await Assert.ThrowsAnyAsync<Exception>(() => ExecuteParseFromStringWithDefaults());
   }
 
   [Fact]
@@ -163,25 +132,19 @@ public class OpenAiEntryParserTests
     var location = "expected location";
     SetReply(new ReplyBuilder().WithLocation(location).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Equal(location, entry.Location);
+    Assert.Equal(location, result.Location);
   }
 
   [Fact]
-  public async Task ParseFromString_ShouldNotThrowWhenLocationIsMissingFromResponse()
+  public async Task ParseFromString_ReturnsEmptyLocationWhenItIsMissingFromResponse()
   {
     SetReply(new ReplyBuilder().WithLocation(null).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var exception = await Record.ExceptionAsync(() => _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None));
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Null(exception);
+    Assert.Null(result.Location);
   }
 
   [Fact]
@@ -190,12 +153,9 @@ public class OpenAiEntryParserTests
     List<string> participants = ["expected participant 1", "expected participant 1"];
     SetReply(new ReplyBuilder().WithParticipants(participants).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Equal(participants, entry.Participants);
+    Assert.Equal(participants, result.Participants);
   }
 
   [Fact]
@@ -203,12 +163,9 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithParticipants(null).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Empty(entry.Participants);
+    Assert.Empty(result.Participants);
   }
 
   [Fact]
@@ -217,12 +174,9 @@ public class OpenAiEntryParserTests
     List<string> recurrence = ["expected recurrence 1", "expected recurrence 1"];
     SetReply(new ReplyBuilder().WithRecurrence(recurrence).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Equal(recurrence, entry.Recurrence);
+    Assert.Equal(recurrence, result.Recurrence);
   }
 
   [Fact]
@@ -230,52 +184,66 @@ public class OpenAiEntryParserTests
   {
     SetReply(new ReplyBuilder().WithRecurrence(null).Build());
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults();
 
-    Assert.Empty(entry.Recurrence);
+    Assert.Empty(result.Recurrence);
   }
 
   [Fact]
-  public async Task ParseFromString_AddsPromptToEntry()
+  public async Task ParseFromString_ParsesTimeZoneFromResponse()
   {
-    SetDefaultReply();
+    var timeZone = "Europe/Amsterdam";
+    SetReply(new ReplyBuilder().WithTimeZone(timeZone).Build());
 
+    var result = await ExecuteParseFromStringWithDefaults();
+
+    Assert.Equal(timeZone, result.TimeZone);
+  }
+
+  [Fact]
+  public async Task ParseFromString_AddsLocalTimeZoneToResultIfMissingFromResponse()
+  {
+    var timeZone = "Europe/Amsterdam";
+    SetReply(new ReplyBuilder().WithTimeZone(null).Build());
+
+    var result = await ExecuteParseFromStringWithDefaults(timeZone: timeZone);
+
+    Assert.Equal(timeZone, result.TimeZone);
+  }
+
+  [Fact]
+  public async Task ParseFromString_AddsPromptToResult()
+  {
     var input = "expected input";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    SetDefaultReply();
 
-    Assert.Equal(input, entry.Prompt);
+    var result = await ExecuteParseFromStringWithDefaults(input: input);
+
+    Assert.Equal(input, result.Prompt);
   }
 
   [Fact]
-  public async Task ParseFromString_AddsCreatedAtToEntry()
+  public async Task ParseFromString_AddsLocalTimeToResult()
   {
+    var localTime = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
     SetDefaultReply();
 
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, CancellationToken.None);
+    var result = await ExecuteParseFromStringWithDefaults(localTime: localTime);
 
-    Assert.Equal(DateTimeOffset.UtcNow, entry.CreatedAt, TimeSpan.FromSeconds(1));
+    Assert.Equal(localTime, result.LocalTime, TimeSpan.FromSeconds(1));
   }
 
-  [Fact]
-  public async Task ParseFromString_AddsManuallySetCreatedAtToEntry()
+  private Task<EntryParseResult> ExecuteParseFromStringWithDefaults(
+    string? input = null,
+    DateTimeOffset? localTime = null,
+    string? timeZone = null,
+    CancellationToken? cancellationToken = null)
   {
-    SetDefaultReply();
-
-    var input = "not relevant";
-    var calendarId = Guid.NewGuid();
-    var entryId = Guid.NewGuid();
-    var now = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8));
-    var entry = await _openAiEntryParser.ParseFromString(input, calendarId, entryId, now, CancellationToken.None);
-
-    Assert.Equal(now, entry.CreatedAt, TimeSpan.FromSeconds(1));
+    return _openAiEntryParser.ParseFromString(
+      input ?? "not relevan",
+      localTime ?? DateTimeOffset.UtcNow,
+      timeZone ?? "Europe/Helsinki",
+      cancellationToken ?? CancellationToken.None);
   }
 
   private void SetDefaultReply()
@@ -304,6 +272,7 @@ public class OpenAiEntryParserTests
     private string? title = "title";
     private string? date = "2024-06-10T20:55:23Z";
     private string? location = "location";
+    private string? timeZone = "Europe/Helsinki";
     private List<string>? participants = ["expected participant"];
     private List<string>? recurrence = ["expected recurrence"];
 
@@ -323,6 +292,12 @@ public class OpenAiEntryParserTests
     public ReplyBuilder WithLocation(string? value)
     {
       location = value;
+      return this;
+    }
+
+    public ReplyBuilder WithTimeZone(string? value)
+    {
+      timeZone = value;
       return this;
     }
 
@@ -355,6 +330,11 @@ public class OpenAiEntryParserTests
       if (location is not null)
       {
         fields.Add($"\"location\": \"{location}\"");
+      }
+
+      if (timeZone is not null)
+      {
+        fields.Add($"\"timeZone\": \"{timeZone}\"");
       }
 
       if (participants is not null)

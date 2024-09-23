@@ -1,5 +1,6 @@
 using FamilyCalendar.Entries;
 using FamilyCalendar.Pages.Manage;
+using FamilyCalendar.Tests.Entries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NSubstitute;
@@ -183,17 +184,7 @@ public class EditableEntryRowModelTests
 
   private Entry CreateTestEntry()
   {
-    return new Entry
-    {
-      Id = _entryId,
-      CalendarId = _calendarId,
-      Title = "New Entry",
-      Date = DateTimeOffset.UtcNow,
-      Participants = ["Tester"],
-      Recurrence = [],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
-    };
+    return EntryTestUtils.CreateTestEntry().With(id: _entryId, calendarId: _calendarId);
   }
 
   private static EditableEntryRowModel.UpdateEntryInputModel CreateInput(

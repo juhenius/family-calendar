@@ -4,15 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tailwindcss build -i wwwroot/css/site.css -o wwwroot/css/styles.css"
+    "build": "concurrently npm:build:styles npm:build:ts",
+    "build:styles": "tailwindcss build -i Web/main.css -o wwwroot/css/styles.css",
+    "build:ts": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/luxon": "^3.4.2",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^9.0.1",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3"
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.6.2"
   },
   "dependencies": {
     "lts": "^1.2.0"

@@ -1,10 +1,14 @@
 @model IndexModel
 
-<form hx-post hx-page="Index" hx-page-handler="AddEntry" hx-swap="outerHTML" class="space-y-4">
+<form hx-post hx-page="Index" hx-page-handler="AddEntry" hx-swap="outerHTML" class="space-y-4"
+  x-data="{ currentTime: getLocalIsoDate(), timeZone: getLocalTimeZone() }"
+  x-on:submit="currentTime = getLocalIsoDate()">
   <div>
-    <label asp-for="EntryInput" class="block form-label">Entry</label>
-    <input type="text" asp-for="EntryInput" class="block w-full mt-1 form-input">
+    <label asp-for="Input.Prompt" class="block form-label">Entry</label>
+    <input type="text" asp-for="Input.Prompt" class="block w-full mt-1 form-input">
   </div>
+  <input asp-for="Input.CurrentTime" type="hidden" :value="currentTime">
+  <input asp-for="Input.TimeZone" type="hidden" :value="timeZone">
   <div class="flex flex-row justify-end">
     <button type="submit" class="btn btn-blue w-24 flex flex-col items-center">
       <span class="hide-on-loading">Add</span>

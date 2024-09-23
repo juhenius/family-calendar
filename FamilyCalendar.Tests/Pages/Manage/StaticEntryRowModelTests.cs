@@ -1,5 +1,6 @@
 using FamilyCalendar.Entries;
 using FamilyCalendar.Pages.Manage;
+using FamilyCalendar.Tests.Entries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NSubstitute;
@@ -40,7 +41,7 @@ public class StaticEntryRowModelTests
   }
 
   [Fact]
-  public async Task OnGetAsync_SetsEntryWhenEntryIsFound()
+  public async Task OnGetAsync_DisplaysCorrectEntryWhenItIsFound()
   {
     var entry = CreateTestEntry();
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
@@ -67,12 +68,10 @@ public class StaticEntryRowModelTests
   public async Task OnPatchReparseEntryAsync_UpdatesEntryWithReparsedOne()
   {
     var originalEntry = CreateTestEntry().With(title: "original");
-    var reparsedEntry = CreateTestEntry().With(title: "reparsed");
-
+    var reparsedEntry = EntryTestUtils.CreateTestParseResult(title: "reparsed");
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
       .Returns(Task.FromResult<Entry?>(originalEntry));
-
-    _entryParser.ParseFromString(originalEntry.Prompt, _calendarId, _entryId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
       .Returns(Task.FromResult(reparsedEntry));
 
     await _pageModel.OnPatchReparseEntryAsync(CancellationToken.None);
@@ -85,55 +84,61 @@ public class StaticEntryRowModelTests
   [Fact]
   public async Task OnPatchReparseEntryAsync_UsesOriginalPrompt()
   {
-    var originalEntry = CreateTestEntry().With(title: "original");
-
+    var expectedPrompt = "original prompt";
+    var originalEntry = CreateTestEntry().With(prompt: expectedPrompt);
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
       .Returns(Task.FromResult<Entry?>(originalEntry));
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+      .Returns(Task.FromResult(EntryTestUtils.CreateTestParseResult()));
 
     await _pageModel.OnPatchReparseEntryAsync(CancellationToken.None);
 
-    await _entryParser.Received(1).ParseFromString(originalEntry.Prompt, _calendarId, _entryId,
-      Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+    await _entryParser.Received(1).ParseFromString(expectedPrompt, Arg.Any<DateTimeOffset>(), Arg.Any<string>(),
+      Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task OnPatchReparseEntryAsync_UsesEntryCreatedAtForRelativeTimes()
+  public async Task OnPatchReparseEntryAsync_UsesOriginalCreatedAtForLocalTime()
   {
-    var originalEntry = CreateTestEntry().With(title: "original");
-
+    var timeZone = "Europe/Amsterdam";
+    var createdAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero);
+    var expectedLocalTime = new DateTimeOffset(2023, 5, 20, 7, 30, 0, TimeSpan.FromHours(2));
+    var originalEntry = CreateTestEntry().With(createdAt: createdAt, timeZone: timeZone);
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
       .Returns(Task.FromResult<Entry?>(originalEntry));
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+      .Returns(Task.FromResult(EntryTestUtils.CreateTestParseResult()));
 
     await _pageModel.OnPatchReparseEntryAsync(CancellationToken.None);
 
-    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), _calendarId, _entryId,
-      originalEntry.CreatedAt, Arg.Any<CancellationToken>());
+    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), expectedLocalTime, Arg.Any<string>(),
+      Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task OnPatchReparseEntryAsync_UsesCurrentTimezone()
+  public async Task OnPatchReparseEntryAsync_UsesOriginalTimeZone()
   {
-    var originalEntry = CreateTestEntry().With(title: "original");
-
+    var expectedTimeZone = "Europe/Amsterdam";
+    var originalEntry = CreateTestEntry().With(timeZone: expectedTimeZone);
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
       .Returns(Task.FromResult<Entry?>(originalEntry));
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+      .Returns(Task.FromResult(EntryTestUtils.CreateTestParseResult()));
 
     await _pageModel.OnPatchReparseEntryAsync(CancellationToken.None);
 
-    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), _calendarId, _entryId,
-      Arg.Is<DateTimeOffset>(now => now.Offset == DateTimeOffset.Now.Offset), Arg.Any<CancellationToken>());
+    await _entryParser.Received(1).ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), expectedTimeZone,
+      Arg.Any<CancellationToken>());
   }
 
   [Fact]
-  public async Task OnPatchReparseEntryAsync_SetsEntryWhenEntryIsFound()
+  public async Task OnPatchReparseEntryAsync_DisplaysUpdatedEntry()
   {
     var originalEntry = CreateTestEntry().With(title: "original");
-    var reparsedEntry = CreateTestEntry().With(title: "reparsed");
-
+    var reparsedEntry = EntryTestUtils.CreateTestParseResult(title: "reparsed");
     _entryRepository.GetAsync(_calendarId, _entryId, Arg.Any<CancellationToken>())
       .Returns(Task.FromResult<Entry?>(originalEntry));
-
-    _entryParser.ParseFromString(originalEntry.Prompt, _calendarId, _entryId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+    _entryParser.ParseFromString(Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
       .Returns(Task.FromResult(reparsedEntry));
 
     var result = await _pageModel.OnPatchReparseEntryAsync(CancellationToken.None);
@@ -144,16 +149,6 @@ public class StaticEntryRowModelTests
 
   private Entry CreateTestEntry()
   {
-    return new Entry
-    {
-      Id = _entryId,
-      CalendarId = _calendarId,
-      Title = "New Entry",
-      Date = DateTimeOffset.UtcNow,
-      Participants = ["Tester"],
-      Recurrence = [],
-      Prompt = "Doctor Appointment now at Doctors office",
-      CreatedAt = new DateTimeOffset(2024, 5, 31, 14, 5, 0, TimeSpan.FromHours(8)),
-    };
+    return EntryTestUtils.CreateTestEntry().With(id: _entryId, calendarId: _calendarId);
   }
 }

@@ -22,10 +22,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CssFiles Include="wwwroot/css/site.css" />
+    <Compile Remove="node_modules\**" />
+    <Content Remove="node_modules\**" />
+    <EmbeddedResource Remove="node_modules\**" />
+    <None Remove="node_modules\**" />
+    <Watch Include="Web\**\*.ts" />
   </ItemGroup>
 
-  <Target Name="InstallNodeDependencies" BeforeTargets="Build" Condition="!Exists('node_modules')">
+  <Target Name="InstallNodeDependencies" BeforeTargets="BuildWeb" Condition="!Exists('node_modules')">
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="node --version" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
     </Exec>
@@ -33,7 +38,8 @@
     <Exec Command="npm ci" />
   </Target>
 
-  <Target Name="BuildNodeDependencies" BeforeTargets="Build" Inputs="@(CssFiles)" Outputs="wwwroot/css/styles.css">
+  <Target Name="BuildWeb" BeforeTargets="BeforeBuild" Condition="'$(IsUnderTest)' != 'true'">
+    <Message Importance="high" Text="Building Web..." />
     <Exec Command="npm run build" />
   </Target>
 </Project>

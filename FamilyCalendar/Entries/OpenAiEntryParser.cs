@@ -11,33 +11,27 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
   private readonly IChatCompletionService _chatCompletionService = chatCompletionService;
   private const double Temperature = 0.2;
 
-  public Task<Entry> ParseFromString(string input, Guid calendarId, Guid entryId, CancellationToken cancellationToken = default)
+  public async Task<EntryParseResult> ParseFromString(string prompt, DateTimeOffset localTime, string timeZone, CancellationToken cancellationToken = default)
   {
-    return ParseFromString(input, calendarId, entryId, DateTimeOffset.Now, cancellationToken);
-  }
-
-  public async Task<Entry> ParseFromString(string input, Guid calendarId, Guid entryId, DateTimeOffset now, CancellationToken cancellationToken = default)
-  {
-    var chatHistory = InitChatHistory(now);
-    var unvalidatedEntryJson = await ParseEntry(input, chatHistory, cancellationToken);
+    var chatHistory = InitChatHistory(localTime, timeZone);
+    var unvalidatedEntryJson = await ParseEntry(prompt, chatHistory, cancellationToken);
     var validatedEntryJson = await ValidateEntry(unvalidatedEntryJson, chatHistory, cancellationToken);
     var entry = JsonSerializer.Deserialize<EntryJson>(validatedEntryJson) ?? throw new ArgumentException("unable to parse input");
 
-    return new Entry()
+    return new EntryParseResult()
     {
-      Id = entryId,
-      CalendarId = calendarId,
       Title = entry.Title,
       Date = ParseDate(entry.Date),
       Location = entry.Location,
       Participants = entry.Participants ?? [],
       Recurrence = entry.Recurrence ?? [],
-      Prompt = input,
-      CreatedAt = now,
+      Prompt = prompt,
+      LocalTime = localTime,
+      TimeZone = entry.TimeZone ?? timeZone,
     };
   }
 
-  private static ChatHistory InitChatHistory(DateTimeOffset now)
+  private static ChatHistory InitChatHistory(DateTimeOffset localTime, string timeZone)
   {
     var result = new ChatHistory();
     result.AddSystemMessage(
@@ -62,6 +56,10 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
             ""type"": [""string"", ""null""],
             ""description"": ""Location of the event""
           }},
+          ""timeZone"": {{
+            ""type"": [""string"", ""null""],
+            ""description"": ""Time zone of the event if it can be deduced from the location, otherwise use the current local timezone""
+          }},
           ""participants"": {{
             ""type"": ""array"",
             ""description"": ""Names of the persons participating in the event. Empty array for events without participants."",
@@ -82,9 +80,10 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
         }}
       }}
 
-      Current in UTC time is {now.ToUniversalTime():s}.
-      Current timezone offset is {now.Offset}
-      Current timezone is Europe/Helsinki
+      Current UTC time is {localTime.ToUniversalTime():s}.
+      Current local time is {localTime:s}.
+      Current timezone offset is {localTime.Offset}
+      Current timezone is {timeZone}
 
       Known participants are:
       - Matti
@@ -95,6 +94,8 @@ public class OpenAiEntryParser(IChatCompletionService chatCompletionService) : I
 
       Remember to be extra precise on the dates as you want to make sure calendar
       events are accurate. Use UTC timezone for all date and time related fields.
+      For relative dates use current time as reference.
+      If location is in different time zone, use that for the event time while still keeping the actual value in UTC.
       Please ensure that weeks start from Monday and not Sunday.
       If you are unsure, remember that events are most likely created into the future.
       If no date is provided, use current time."
@@ -144,6 +145,9 @@ internal sealed class EntryJson
 
   [JsonPropertyName("location")]
   public string? Location { get; set; } = default;
+
+  [JsonPropertyName("timeZone")]
+  public string? TimeZone { get; set; } = default;
 
   [JsonPropertyName("participants")]
   public List<string> Participants { get; set; } = default!;

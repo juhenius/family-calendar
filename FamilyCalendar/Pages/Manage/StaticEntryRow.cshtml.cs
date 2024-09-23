@@ -2,6 +2,7 @@ using FamilyCalendar.Entries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
+using FamilyCalendar.Common;
 
 namespace FamilyCalendar.Pages.Manage;
 
@@ -39,8 +40,9 @@ public class StaticEntryRowModel(IEntryRepository entryRepository, IEntryParser 
       return NotFound();
     }
 
-    var now = entry.CreatedAt.ToOffset(DateTimeOffset.Now.Offset);
-    var reparsedEntry = await _entryParser.ParseFromString(entry.Prompt, CalendarId, entry.Id, now, cancellationToken);
+    var localTime = entry.CreatedAt.InTimeZone(entry.TimeZone);
+    var parseResult = await _entryParser.ParseFromString(entry.Prompt, localTime, entry.TimeZone, cancellationToken);
+    var reparsedEntry = parseResult.ToEntry(entry.Id, CalendarId);
     await _entryRepository.UpdateAsync(reparsedEntry, cancellationToken);
     Entry = reparsedEntry;
 

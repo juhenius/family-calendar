@@ -1,3 +1,5 @@
+@using FamilyCalendar.Common
+
 @model DateTime
 
-@Model.ToString("yyyy-MM-dd HH:mm:ss")
+<span x-data="{ dateTime: formatIsoDateForDisplay('@Model.ToIsoString()') }" x-text="dateTime"></span>

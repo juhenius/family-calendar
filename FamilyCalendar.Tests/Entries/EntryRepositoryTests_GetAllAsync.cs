@@ -34,12 +34,14 @@ public partial class EntryRepositoryTests
           { "title", new AttributeValue { S = "Entry 1" } },
           { "prompt", new AttributeValue { S = "Prompt 1" } },
           { "createdAt", new AttributeValue { S = "2024-07-13T20:55:23Z" } },
+          { "timeZone", new AttributeValue { S = "Europe/Amsterdam" } },
         },
         new() {
           { "id", new AttributeValue { S = id2.ToString() } },
           { "title", new AttributeValue { S = "Entry 2" } },
           { "prompt", new AttributeValue { S = "Prompt 2" } },
           { "createdAt", new AttributeValue { S = "2024-07-14T20:55:23Z" } },
+          { "timeZone", new AttributeValue { S = "Europe/Amsterdam" } },
         }
       ]
     };

@@ -18,6 +18,7 @@ public class EntryDtoToEntryMapperTests
       Recurrence = [],
       Prompt = "Doctor Appointment now at Doctors office",
       CreatedAt = new DateTimeOffset(2023, 5, 20, 5, 30, 0, TimeSpan.Zero),
+      TimeZone = "Europe/Amsterdam",
     };
 
     var entry = entryDto.ToEntry();
@@ -32,5 +33,6 @@ public class EntryDtoToEntryMapperTests
     Assert.Equal(entryDto.Recurrence, entry.Recurrence);
     Assert.Equal(entryDto.Prompt, entry.Prompt);
     Assert.Equal(entryDto.CreatedAt, entry.CreatedAt);
+    Assert.Equal(entryDto.TimeZone, entry.TimeZone);
   }
 }

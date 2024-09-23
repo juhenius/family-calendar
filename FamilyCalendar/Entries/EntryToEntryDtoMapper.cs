@@ -22,6 +22,7 @@ public static class EntryToEntryDtoMapper
       Recurrence = source.Recurrence,
       Prompt = source.Prompt,
       CreatedAt = source.CreatedAt.ToUniversalTime(),
+      TimeZone = source.TimeZone,
       DisplayStartDate = source.ResolveDisplayStartDate(),
       DisplayEndDate = source.ResolveDisplayEndDate(),
     };

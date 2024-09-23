@@ -1,4 +1,5 @@
 ﻿@page "{calendarId:guid}/{entryId:guid}"
+@using FamilyCalendar.Common
 @model EditableEntryRowModel
 @{
   ViewData["Title"] = "Edit Entry";
@@ -27,7 +28,9 @@
     </form>
   </div>
   <form hx-patch hx-page="EditableEntryRow" hx-route-entryId="@entry.Id" hx-route-calendarId="@entry.CalendarId"
-    hx-swap="outerHTML">
+    hx-swap="outerHTML"
+    x-data="{ entryDate: '@Model.Input.Date.ToIsoString()', localDate: formatIsoDateForDateTimeLocalInput('@Model.Input.Date.ToIsoString()') }"
+    x-on:submit="entryDate = formatDateTimeLocalToUtcString(localDate);">
     <div asp-validation-summary="ModelOnly" class="text-red-400 mb-4"></div>
     <div class="flex flex-col gap-4">
       <div>
@@ -35,11 +38,12 @@
         <input asp-for="Input.Title" class="block w-full mt-1 form-input">
         <span asp-validation-for="Input.Title" class="text-red-400"></span>
       </div>
-      <div>
-        <label asp-for="Input.Date" class="block form-label">Date</label>
-        <input asp-for="Input.Date" class="block w-full mt-1 form-input">
+      <label>
+        <div class="block form-label">Date</div>
+        <input type="datetime-local" class="block w-full mt-1 form-input" x-model="localDate">
+        <input asp-for="Input.Date" type="hidden" :value="entryDate">
         <span asp-validation-for="Input.Date" class="text-red-400"></span>
-      </div>
+      </label>
       <div>
         <label asp-for="Input.Location" class="block form-label">Location</label>
         <input asp-for="Input.Location" class="block w-full mt-1 form-input">
